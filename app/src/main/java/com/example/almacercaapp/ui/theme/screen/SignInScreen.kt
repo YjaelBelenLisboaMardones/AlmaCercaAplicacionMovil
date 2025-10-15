@@ -26,6 +26,7 @@ import com.example.almacercaapp.ui.theme.component.HeaderLogo
 import com.example.almacercaapp.ui.theme.component.PrimaryButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
+import com.example.almacercaapp.navigation.Routes
 
 
 @Composable
@@ -126,7 +127,7 @@ fun SignInScreen(
                 text = "Entrar",
                 onClick = {
                     if (viewModel.validateLogin()) {
-                        navController.navigate("location")
+                        navController.navigate(Routes.Location.route)
                     }
                 }
             )

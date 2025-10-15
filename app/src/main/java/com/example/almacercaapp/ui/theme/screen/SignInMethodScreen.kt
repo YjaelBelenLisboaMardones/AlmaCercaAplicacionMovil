@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.almacercaapp.R
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.example.almacercaapp.navigation.Routes
 import com.example.almacercaapp.ui.theme.component.PrimaryButton
 
 @Composable
@@ -90,7 +91,7 @@ fun SignInMethodScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { navController.navigate("signin") },
+                onClick = { navController.navigate(Routes.SignIn.route) },
                 colors =  ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),

@@ -18,16 +18,14 @@ import com.example.almacercaapp.ui.theme.screen.SignInMethodScreen
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = Routes.Splash.route
     ) {
-        composable("splash") { SplashScreen(navController) }
-        composable("onboarding") { OnboardingScreen(navController) }
-        composable("signup") { SignUpScreen(navController) }
-        composable("verification") { VerificationScreen(navController) }
-        composable("signin") { SignInScreen(navController) }
-        composable("signin_method") { SignInMethodScreen(navController) }
-
-
-
+        composable(Routes.Splash.route) { SplashScreen(navController) }
+        composable(Routes.Onboarding.route) { OnboardingScreen(navController) }
+        composable(Routes.SignInMethod.route) { SignInMethodScreen(navController) }
+        composable(Routes.SignIn.route) { SignInScreen(navController) }
+        composable(Routes.SignUp.route) { SignUpScreen(navController) }
+        composable(Routes.Verification.route) { VerificationScreen(navController) }
+        //composable(Routes.Location.route) { LocationScreen(navController) }
     }
 }

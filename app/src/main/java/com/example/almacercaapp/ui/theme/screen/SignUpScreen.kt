@@ -22,6 +22,7 @@ import com.example.almacercaapp.ui.theme.component.HeaderLogo
 import com.example.almacercaapp.ui.theme.component.PrimaryButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
+import com.example.almacercaapp.navigation.Routes
 
 
 import androidx.compose.foundation.Image
@@ -140,7 +141,7 @@ fun SignUpScreen(navController: NavController, viewModel: AuthViewModel = viewMo
                 text = "Registrarse",
                 onClick = {
                     if (viewModel.validateLogin()) {
-                        navController.navigate("verification")
+                        navController.navigate(Routes.Verification.route)
                     }
                 }
             )

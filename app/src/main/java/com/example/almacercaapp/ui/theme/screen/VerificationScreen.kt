@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.almacercaapp.viewmodel.AuthViewModel
-
+import com.example.almacercaapp.navigation.Routes
 @Composable
 fun VerificationScreen(
     navController: NavController,
@@ -75,7 +75,7 @@ fun VerificationScreen(
             Button(
                 onClick = {
                     if (viewModel.validateVerification()) {
-                        navController.navigate("location")
+                        navController.navigate(Routes.Location.route)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6FCF97)),

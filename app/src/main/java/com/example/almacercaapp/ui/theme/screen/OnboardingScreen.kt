@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.almacercaapp.R
 import androidx.compose.material3.MaterialTheme
+import com.example.almacercaapp.navigation.Routes
+
 
 
 @Composable
@@ -66,7 +68,7 @@ fun OnboardingScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    navController.navigate("signin_method")
+                    navController.navigate(Routes.SignInMethod.route)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6FCF97)),
                 shape = RoundedCornerShape(16.dp),
