@@ -30,6 +30,10 @@ class AuthViewModel : ViewModel() {
     var timeLeft = mutableStateOf(30)
     var canResend = mutableStateOf(false)
 
+    var selectedCountry = mutableStateOf("")
+    var selectedArea = mutableStateOf("")
+    var userLocation = mutableStateOf("")
+
     init {
         startCountdown()
     }
@@ -97,4 +101,15 @@ class AuthViewModel : ViewModel() {
     fun updatePhone(value: String) { user.value = user.value.copy(phoneNumber = value) }
     fun updatePassword(value: String) { user.value = user.value.copy(password = value) }
     fun updateVerificationCode(value: String) { verificationCode.value = value }
+
+    fun updateCountry(country: String) {
+        selectedCountry.value = country
+    }
+
+    fun updateArea(area: String) {
+        selectedArea.value = area
+    }
+    fun updateLocation(location: String) {
+        userLocation.value = location
+    }
 }

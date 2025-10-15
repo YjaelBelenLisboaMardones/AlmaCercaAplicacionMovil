@@ -10,6 +10,7 @@ import com.example.almacercaapp.ui.theme.screen.SignUpScreen
 import com.example.almacercaapp.ui.theme.screen.VerificationScreen
 import com.example.almacercaapp.ui.theme.screen.SignInScreen
 import com.example.almacercaapp.ui.theme.screen.SignInMethodScreen
+import com.example.almacercaapp.ui.theme.screen.LocationScreen
 
 
 
@@ -26,6 +27,6 @@ fun NavGraph(navController: NavHostController) {
         composable(Routes.SignIn.route) { SignInScreen(navController) }
         composable(Routes.SignUp.route) { SignUpScreen(navController) }
         composable(Routes.Verification.route) { VerificationScreen(navController) }
-        //composable(Routes.Location.route) { LocationScreen(navController) }
+        composable(Routes.Location.route) { LocationScreen(navController) }
     }
 }
