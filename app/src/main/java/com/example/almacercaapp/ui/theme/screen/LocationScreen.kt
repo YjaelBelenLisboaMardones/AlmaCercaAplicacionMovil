@@ -46,7 +46,6 @@ fun LocationScreen(
             verticalArrangement = Arrangement.Top,
             modifier = Modifier.fillMaxSize()
         ) {
-            //  Botón para volver
             IconButton(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier.align(Alignment.Start)
@@ -56,7 +55,7 @@ fun LocationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🗺️ Imagen de ubicación
+            // Imagen de ubicación
             Image(
                 painter = painterResource(id = R.drawable.location_icon),
                 contentDescription = "Ubicación",
@@ -84,7 +83,7 @@ fun LocationScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 🌎 Selección de país
+            // Selección de país
             ExposedDropdownMenuBox(
                 expanded = expandedCountry,
                 onExpandedChange = { expandedCountry = !expandedCountry }
