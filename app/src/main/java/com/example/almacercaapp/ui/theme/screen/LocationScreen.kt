@@ -46,7 +46,7 @@ fun LocationScreen(
             verticalArrangement = Arrangement.Top,
             modifier = Modifier.fillMaxSize()
         ) {
-            // 🔙 Botón para volver
+            //  Botón para volver
             IconButton(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier.align(Alignment.Start)
