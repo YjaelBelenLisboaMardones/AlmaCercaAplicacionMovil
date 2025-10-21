@@ -1,0 +1,83 @@
+package com.example.almacercaapp.viewmodel
+import androidx.lifecycle.ViewModel
+import com.example.almacercaapp.R
+import com.example.almacercaapp.model.Store
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update // Útil para actualizar el estado inmutable
+import com.example.almacercaapp.model.Category
+// 1. Define el estado COMPLETO que necesita la UI
+data class HomeUiState(
+    val query: String = "", //define el texto que el usuario escribe en el componente de barra de busqueda
+    val searchResults: List<Store> = emptyList(), // define la lista de resultados que debe mostrarse mientras el usuario escribe o pulsa la tecla "buscar"
+    val categories: List<Category> = emptyList(), // Usa tu  clase Category
+    val storesInYourArea: List<Store> = emptyList(), //tiendas en la zona
+    @androidx.annotation.DrawableRes val bannerRes: Int? = null, // muestra el banner y es local
+    val isLoading: Boolean = false // definimos si la UI debe mostrar un indicador de carga oara darle un feedback al usuario
+)
+
+class HomeViewModel : ViewModel() {
+
+    // --- SIMULACIÓN DE UN REPOSITORIO (Tus datos de prueba) ---
+
+    // 1. Datos para las tiendas "En tu zona"
+    private val storesData = listOf(
+        Store(1, "Botillería La Esquina", "Botillería", "...", "...", R.drawable.logo_esquina),
+        Store(2, "Almacen y Bazar Sandra", "Almacen & Bazar", "...", "...", R.drawable.logo_sandra),
+        Store(3, "Almacen Mar", "Almacen", "...", "...", R.drawable.logo_mariluna)
+    )
+
+    // 2. Datos para las categorías
+    private val categoriesData = listOf(
+        Category("Minimarket", R.drawable.cat_minimarket),
+        Category("Botillería", R.drawable.cat_botilleria),
+        Category("Bazar", R.drawable.cat_bazar),
+        Category("Almacen", R.drawable.cat_almacen)
+    )
+
+    // --- FIN DE LA SIMULACIÓN ---
+
+    // 2. Estado Mutable Privado (MutableStateFlow)
+    private val _uiState = MutableStateFlow(
+        HomeUiState(
+            storesInYourArea = storesData, // Carga las tiendas "En tu zona"
+            categories = categoriesData,   // Carga las categorías con imágenes
+            bannerRes = R.drawable.banner_lucas // Carga el banner
+        )
+    )
+    // 3. Estado Público Inmutable (StateFlow)
+    val uiState: StateFlow<HomeUiState> = _uiState
+
+    // --- LÓGICA DE BÚSQUEDA (casi no cambia) ---
+    fun onQueryChange(newQuery: String) {
+        // Actualiza el 'query' en el StateFlow
+        _uiState.update { it.copy(query = newQuery) }
+        filterResults(newQuery)
+    }
+
+    // 5. Método de búsqueda general
+    private fun filterResults(currentQuery: String) {
+        val allStoresForSearch = storesData // Usamos los mismos datos para buscar
+        val filteredList = if (currentQuery.isNotBlank()) {
+            allStoresForSearch.filter {
+                it.name.contains(currentQuery, ignoreCase = true) ||
+                        it.category.contains(currentQuery, ignoreCase = true)
+            }
+        } else {
+            emptyList()
+        }
+        // Actualiza los 'searchResults' en el StateFlow
+        _uiState.update { it.copy(searchResults = filteredList) }
+    }
+
+    // 6. onSearch: Puede reutilizar filterResults o agregar lógica extra (ej. guardar historial)
+    fun onSearch(query: String) {
+        filterResults(query)
+        // Lógica adicional: aquí podrías añadir la búsqueda al historial de recientes
+    }
+
+    // Método para limpiar la búsqueda si es necesario
+    fun clearSearch() {
+        _uiState.update { it.copy(query = "", searchResults = emptyList()) }
+    }
+}
