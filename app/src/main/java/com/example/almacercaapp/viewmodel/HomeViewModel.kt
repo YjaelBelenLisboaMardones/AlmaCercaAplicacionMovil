@@ -18,13 +18,45 @@ data class HomeUiState(
 
 class HomeViewModel : ViewModel() {
 
-    // --- SIMULACIÓN DE UN REPOSITORIO (Tus datos de prueba) ---
+
+
+    // --- SIMULACIÓN DE UN REPOSITORIO (datos de prueba) ---
 
     // 1. Datos para las tiendas "En tu zona"
     private val storesData = listOf(
-        Store(1, "Botillería La Esquina", "Botillería", "...", "...", R.drawable.logo_esquina),
-        Store(2, "Almacen y Bazar Sandra", "Almacen & Bazar", "...", "...", R.drawable.logo_sandra),
-        Store(3, "Almacen Mar", "Almacen", "...", "...", R.drawable.logo_mariluna)
+        Store(
+            id = 1,
+            name = "Botillería La Esquina",
+            category = "Botillería",
+            address = "...",
+            distance = "150 m",
+            logoRes = R.drawable.logo_esquina,
+            // ▼▼▼ AÑADE LOS PARÁMETROS FALTANTES ▼▼▼
+            rating = 4.8f,
+            description = "La mejor botillería de la zona, con una gran variedad de licores y bebidas."
+        ),
+        Store(
+            id = 2,
+            name = "Almacen y Bazar Sandra",
+            category = "Almacen & Bazar",
+            address = "...",
+            distance = "300 m",
+            logoRes = R.drawable.logo_sandra,
+            // ▼▼▼ AÑADE LOS PARÁMETROS FALTANTES ▼▼▼
+            rating = 4.5f,
+            description = "Tu almacén de confianza para las compras del día a día. Frutas, verduras y abarrotes."
+        ),
+        Store(
+            id = 3,
+            name = "Almacen Mar",
+            category = "Almacen",
+            address = "...",
+            distance = "500 m",
+            logoRes = R.drawable.logo_mariluna,
+            // ▼▼▼ AÑADE LOS PARÁMETROS FALTANTES ▼▼▼
+            rating = 4.2f,
+            description = "Especialistas en productos del mar y conservas. Frescura garantizada."
+        )
     )
 
     // 2. Datos para las categorías

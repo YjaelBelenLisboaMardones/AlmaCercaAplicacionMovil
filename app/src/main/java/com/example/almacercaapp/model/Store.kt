@@ -9,5 +9,7 @@ data class Store(
     val address: String,
     val distance: String,
     // Esta propiedad guardará el ID del recurso de imagen (ej. R.drawable.logo_sandra)
-    @DrawableRes val logoRes: Int
-    )
+    @DrawableRes val logoRes: Int,
+    val rating: Float, // ej: 4.7f
+    val description: String
+)

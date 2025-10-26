@@ -163,7 +163,11 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(uiState.storesInYourArea) { store ->
-                StoreItem(store = store)
+                StoreItem(
+                    store = store,
+                    onClick ={
+                        parentNavController.navigate("details/${store.id}")
+                    })
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -201,18 +205,20 @@ fun CategoryItem(category: Category) {
  * AQUÍ es donde solucionas el tamaño de los logos de las tiendas.
  */
 @Composable
-fun StoreItem(store: Store) {
+fun StoreItem(
+    store: Store,
+    onClick: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .width(120.dp)
-            .clickable { /* Futura navegación a detalles de la tienda */ }
+            .clickable(onClick = onClick)  //{ /* Futura navegación a detalles de la tienda */ }
     ) {
         Card(shape = MaterialTheme.shapes.medium) {
             Image(
                 painter = painterResource(id = store.logoRes), // Asumiendo que tu Store tiene logoRes
                 contentDescription = store.name,
-                // ▼▼▼ SOLUCIÓN DE TAMAÑO ▼▼▼
                 modifier = Modifier.size(100.dp),
                 contentScale = ContentScale.Crop
             )

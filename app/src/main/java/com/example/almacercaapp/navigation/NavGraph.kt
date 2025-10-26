@@ -11,6 +11,8 @@ import com.example.almacercaapp.ui.theme.screen.VerificationScreen
 import com.example.almacercaapp.ui.theme.screen.SignInScreen
 import com.example.almacercaapp.ui.theme.screen.SignInMethodScreen
 import com.example.almacercaapp.ui.theme.screen.MainScreen
+import com.example.almacercaapp.ui.theme.screen.CategoryProductsScreen
+import com.example.almacercaapp.ui.theme.screen.StoreDetailScreen
 
 //Gestiona el flujo de alto nivel
 @Composable
@@ -25,12 +27,35 @@ fun NavGraph(navController: NavHostController) {
         composable("verification") { VerificationScreen(navController) }
         composable("signin") { SignInScreen(navController) }
         composable("signin_method") { SignInMethodScreen(navController) }
-
         // `MainScreen` se encargará de mostrar `HomeScreen` y las otras pestañas.
-        composable("main_screen") {
-            MainScreen(parentNavController = navController)
+        composable("main_screen") { MainScreen(parentNavController = navController) }
+        // ruta para la pantalla store_details
+        composable("details/{storeId}") { backStackEntry ->
+            // Extraemos el ID de la tienda desde los argumentos de la ruta
+            val storeId = backStackEntry.arguments?.getString("storeId")
+
+            // Llamamos al Composable de la pantalla de detalles,
+            // pasándole el ID que hemos recibido.
+            StoreDetailScreen(
+                storeId = storeId,
+                // Le pasamos una función para que el botón de "atrás" en la UI funcione
+                onBack = { navController.popBackStack() }, // Acción para volver atrás
+                parentNavController = navController // Le pasas el NavController de este NavGraph
+            )
         }
+        //pantalla de lista de productos
+        composable("products/{storeId}/{categoryName}") { backStackEntry ->
+            // Extraemos los argumentos de la ruta
+            val storeId = backStackEntry.arguments?.getString("storeId")
+            val categoryName = backStackEntry.arguments?.getString("categoryName")
+
+            CategoryProductsScreen(
+                storeId = storeId,
+                categoryName = categoryName,
+                onBack = { navController.popBackStack() } // Acción para volver atrás
+            )
+        }
+
+
     }
-
-
 }
