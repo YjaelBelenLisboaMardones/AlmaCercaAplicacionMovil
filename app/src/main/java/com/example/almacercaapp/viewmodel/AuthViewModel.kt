@@ -1,7 +1,5 @@
 package com.example.almacercaapp.viewmodel
 
-
-
 //El ViewModel es la capa que maneja la lógica y controla los datos del modelo para la interfaz de usuario
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -9,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.almacercaapp.domain.validation.*
 import com.example.almacercaapp.model.User
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
 
 class AuthViewModel : ViewModel() {
 
@@ -30,9 +30,8 @@ class AuthViewModel : ViewModel() {
     var timeLeft = mutableStateOf(30)
     var canResend = mutableStateOf(false)
 
-    var selectedCountry = mutableStateOf("")
-    var selectedArea = mutableStateOf("")
-    var userLocation = mutableStateOf("")
+    private val _loginSuccess = MutableStateFlow(false)
+    val loginSuccess = _loginSuccess.asStateFlow()
 
     init {
         startCountdown()
@@ -56,6 +55,31 @@ class AuthViewModel : ViewModel() {
             // Aquí podrías llamar a una API para reenviar el código
             startCountdown()
         }
+    }
+
+
+    fun onLoginClicked() {
+        // 1. Valida los campos como ya lo haces
+        if (validateLogin()) {
+            // 2. Aquí iría la lógica de autenticación real (ej. con Firebase)
+            // Como no la tenemos, vamos a simular un éxito inmediato.
+            viewModelScope.launch {
+                // Simula una pequeña demora como si estuviera contactando un servidor
+                delay(500)
+
+                // 3. Comunica el éxito actualizando el estado
+                _loginSuccess.value = true
+            }
+        }
+    }
+
+    /**
+     * Llama a esta función desde la UI una vez que la navegación se ha completado
+     * para evitar que se dispare de nuevo si la pantalla se recompone.
+     */
+
+    fun onNavigationDone() {
+        _loginSuccess.value = false
     }
 
     // VALIDACIONES
@@ -101,15 +125,4 @@ class AuthViewModel : ViewModel() {
     fun updatePhone(value: String) { user.value = user.value.copy(phoneNumber = value) }
     fun updatePassword(value: String) { user.value = user.value.copy(password = value) }
     fun updateVerificationCode(value: String) { verificationCode.value = value }
-
-    fun updateCountry(country: String) {
-        selectedCountry.value = country
-    }
-
-    fun updateArea(area: String) {
-        selectedArea.value = area
-    }
-    fun updateLocation(location: String) {
-        userLocation.value = location
-    }
 }

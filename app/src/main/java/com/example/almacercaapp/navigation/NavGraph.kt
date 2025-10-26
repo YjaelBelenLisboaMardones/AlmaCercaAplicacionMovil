@@ -10,23 +10,52 @@ import com.example.almacercaapp.ui.theme.screen.SignUpScreen
 import com.example.almacercaapp.ui.theme.screen.VerificationScreen
 import com.example.almacercaapp.ui.theme.screen.SignInScreen
 import com.example.almacercaapp.ui.theme.screen.SignInMethodScreen
-import com.example.almacercaapp.ui.theme.screen.LocationScreen
+import com.example.almacercaapp.ui.theme.screen.MainScreen
+import com.example.almacercaapp.ui.theme.screen.CategoryProductsScreen
+import com.example.almacercaapp.ui.theme.screen.StoreDetailScreen
 
-
-
-
+//Gestiona el flujo de alto nivel
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash.route
+        startDestination = "splash" // muestra el punto de partida...
     ) {
-        composable(Routes.Splash.route) { SplashScreen(navController) }
-        composable(Routes.Onboarding.route) { OnboardingScreen(navController) }
-        composable(Routes.SignInMethod.route) { SignInMethodScreen(navController) }
-        composable(Routes.SignIn.route) { SignInScreen(navController) }
-        composable(Routes.SignUp.route) { SignUpScreen(navController) }
-        composable(Routes.Verification.route) { VerificationScreen(navController) }
-        composable(Routes.Location.route) { LocationScreen(navController) }
+        composable("splash") { SplashScreen(navController) } // si le pedimos ir a la vista splash nos muestra la SplashScreen
+        composable("onboarding") { OnboardingScreen(navController) }
+        composable("signup") { SignUpScreen(navController) }
+        composable("verification") { VerificationScreen(navController) }
+        composable("signin") { SignInScreen(navController) }
+        composable("signin_method") { SignInMethodScreen(navController) }
+        // `MainScreen` se encargará de mostrar `HomeScreen` y las otras pestañas.
+        composable("main_screen") { MainScreen(parentNavController = navController) }
+        // ruta para la pantalla store_details
+        composable("details/{storeId}") { backStackEntry ->
+            // Extraemos el ID de la tienda desde los argumentos de la ruta
+            val storeId = backStackEntry.arguments?.getString("storeId")
+
+            // Llamamos al Composable de la pantalla de detalles,
+            // pasándole el ID que hemos recibido.
+            StoreDetailScreen(
+                storeId = storeId,
+                // Le pasamos una función para que el botón de "atrás" en la UI funcione
+                onBack = { navController.popBackStack() }, // Acción para volver atrás
+                parentNavController = navController // Le pasas el NavController de este NavGraph
+            )
+        }
+        //pantalla de lista de productos
+        composable("products/{storeId}/{categoryName}") { backStackEntry ->
+            // Extraemos los argumentos de la ruta
+            val storeId = backStackEntry.arguments?.getString("storeId")
+            val categoryName = backStackEntry.arguments?.getString("categoryName")
+
+            CategoryProductsScreen(
+                storeId = storeId,
+                categoryName = categoryName,
+                onBack = { navController.popBackStack() } // Acción para volver atrás
+            )
+        }
+
+
     }
 }

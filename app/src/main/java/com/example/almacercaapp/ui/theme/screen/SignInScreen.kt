@@ -10,8 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -19,14 +18,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.almacercaapp.R
 import com.example.almacercaapp.viewmodel.AuthViewModel
-import com.example.almacercaapp.domain.validation.*
 import com.example.almacercaapp.ui.theme.component.HeaderLogo
 import com.example.almacercaapp.ui.theme.component.PrimaryButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
-import com.example.almacercaapp.navigation.Routes
+import androidx.compose.runtime.collectAsState
 
 
 @Composable
@@ -36,6 +33,20 @@ fun SignInScreen(
 ) {
     val user = viewModel.user.value
     var passwordVisible by remember { mutableStateOf(false) }
+    val loginSuccess by viewModel.loginSuccess.collectAsState()
+
+    // 2. USA UN 'LaunchedEffect' PARA NAVEGAR DE FORMA SEGURA
+    LaunchedEffect(key1 = loginSuccess) {
+        if (loginSuccess) {
+            // 3. ¡AQUÍ ESTÁ LA NAVEGACIÓN! Usa la ruta correcta.
+            navController.navigate("main_screen") {
+                // Borra la pila de navegación para que el usuario no vuelva al login
+                popUpTo(0) { inclusive = true }
+            }
+            // 4. Resetea el estado en el ViewModel para evitar navegaciones repetidas
+            viewModel.onNavigationDone()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -126,9 +137,7 @@ fun SignInScreen(
             PrimaryButton(
                 text = "Entrar",
                 onClick = {
-                    if (viewModel.validateLogin()) {
-                        navController.navigate(Routes.Location.route)
-                    }
+                    viewModel.onLoginClicked()
                 }
             )
 
