@@ -16,6 +16,8 @@ import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.almacercaapp.viewmodel.AuthViewModel
 import com.example.almacercaapp.navigation.Routes
+import com.example.almacercaapp.ui.theme.screen.MainScreen
+
 @Composable
 fun VerificationScreen(
     navController: NavController,
@@ -75,7 +77,11 @@ fun VerificationScreen(
             Button(
                 onClick = {
                     if (viewModel.validateVerification()) {
-                        navController.navigate(Routes.Location.route)
+                        navController.navigate(Routes.MainScreen.route) {
+                            // Borra TODAS las pantallas anteriores (Splash, Onboarding, SignUp, Verification)
+                            // para que el usuario no pueda volver a ellas con el botón "Atrás".
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6FCF97)),

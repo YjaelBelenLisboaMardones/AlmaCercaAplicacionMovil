@@ -20,6 +20,8 @@ sealed class Routes(val route: String) {
     object HelpCenter : Routes("help_center")
     object Support : Routes("support_chat")
     object Logout : Routes("logout")
+    object MainScreen : Routes("main_screen")
+
 
 }
 
