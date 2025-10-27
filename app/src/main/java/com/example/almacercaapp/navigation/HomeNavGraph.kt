@@ -1,16 +1,29 @@
 package com.example.almacercaapp.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.almacercaapp.ui.theme.screen.*
+// Importa todas las pantallas que usará este gráfico
+import com.example.almacercaapp.ui.theme.screen.CartScreen
+import com.example.almacercaapp.ui.theme.screen.ExploreScreen
+import com.example.almacercaapp.ui.theme.screen.FavoritesScreen
+import com.example.almacercaapp.ui.theme.screen.HomeScreen
+import com.example.almacercaapp.ui.theme.screen.ProfileScreen
+import com.example.almacercaapp.ui.theme.screen.FaqScreen
+import com.example.almacercaapp.ui.theme.screen.HelpCenterScreen
+import com.example.almacercaapp.ui.theme.screen.NotificationsScreen
+import com.example.almacercaapp.ui.theme.screen.PersonalDataScreen
+import com.example.almacercaapp.ui.theme.screen.SupportChatScreen // Asegúrate que el nombre de tu archivo de chat sea SupportScreen.kt
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeNavGraph(
-    navController: NavHostController,
-    parentNavController: NavHostController,
+    navController: NavHostController, // Este es el controlador para las pestañas (Home, Explore, etc.)
+    parentNavController: NavHostController, // Este es el controlador principal (para login/logout)
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -30,17 +43,34 @@ fun HomeNavGraph(
         composable(route = "favorites") {
             FavoritesScreen()
         }
+
+        // --- ESTA ES LA CORRECCIÓN ---
+        // ProfileScreen necesita AMBOS controladores
         composable(route = "profile") {
-            ProfileScreen(navController = parentNavController)
+            ProfileScreen(
+                homeNavController = navController, // El controlador de las pestañas
+                parentNavController = parentNavController  // El controlador principal
+            )
         }
-        composable(route = "faq") {
-            FaqScreen(navController = parentNavController)
+
+        // --- CORRECCIÓN DE LAS OTRAS RUTAS ---
+        // El resto de las pantallas debe usar el 'navController' de las pestañas
+        // para que la barra verde de abajo NO desaparezca.
+
+        composable(Routes.PersonalData.route) {
+            PersonalDataScreen(navController = navController)
         }
-        composable(route = "help_center") {
-            HelpCenterScreen(navController = parentNavController)
+        composable(Routes.Notifications.route) {
+            NotificationsScreen(navController = navController)
         }
-        composable(route = "support_chat") {
-            SupportChatScreen(navController = parentNavController)
+        composable(Routes.Faq.route) {
+            FaqScreen(navController = navController)
+        }
+        composable(Routes.HelpCenter.route) {
+            HelpCenterScreen(navController = navController)
+        }
+        composable(Routes.Support.route) { // Usando la ruta 'support' que definimos
+            SupportChatScreen(navController = navController) // Usando el archivo SupportScreen.kt
         }
     }
 }

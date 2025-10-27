@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,37 +21,32 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.almacercaapp.R
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.ui.input.pointer.pointerInput
 
-
-// --- Función helper para convertir Millis a String ---
+// --- Helper para formatear la fecha seleccionada ---
 @RequiresApi(Build.VERSION_CODES.O)
 fun Long.toFormattedDateString(): String {
     val date = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
     return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonalDataScreen(navController: NavController) {
+    // Campos del formulario
     var nombre by remember { mutableStateOf("Juan Palma") }
-    var email by remember { mutableStateOf("Juan.Palma45@example") }
+    var email by remember { mutableStateOf("Juan.Palma45@example.com") }
     var fechaNacimiento by remember { mutableStateOf("12/07/1990") }
     var genero by remember { mutableStateOf("Masculino") }
     var telefono by remember { mutableStateOf("+56988887777") }
 
-
+    // Estado para el selector de fecha
     var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
 
-        initialSelectedDateMillis = System.currentTimeMillis()
-    )
-
+    // --- Calendario ---
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -60,7 +54,6 @@ fun PersonalDataScreen(navController: NavController) {
                 TextButton(
                     onClick = {
                         showDatePicker = false
-
                         datePickerState.selectedDateMillis?.let {
                             fechaNacimiento = it.toFormattedDateString()
                         }
@@ -68,19 +61,20 @@ fun PersonalDataScreen(navController: NavController) {
                 ) { Text("OK") }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showDatePicker = false }
-                ) { Text("Cancelar") }
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar")
+                }
             }
         ) {
             DatePicker(state = datePickerState)
         }
     }
 
-
+    // --- Pantalla principal ---
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        // Barra superior
         TopAppBar(
             title = { Text("Datos Personales", fontWeight = FontWeight.Bold) },
             navigationIcon = {
@@ -89,7 +83,7 @@ fun PersonalDataScreen(navController: NavController) {
                 }
             },
             actions = {
-                IconButton(onClick = { /* abrir configuración */ }) {
+                IconButton(onClick = { /* Abrir configuración */ }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_set),
                         contentDescription = "Configuración"
@@ -98,7 +92,7 @@ fun PersonalDataScreen(navController: NavController) {
             }
         )
 
-
+        // Contenido del formulario
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -122,31 +116,26 @@ fun PersonalDataScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-
-            Box(
+            // Campo de fecha con calendario funcional
+            OutlinedTextField(
+                value = fechaNacimiento,
+                onValueChange = { },
+                label = { Text("Fecha de Nacimiento") },
+                readOnly = true,
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_calendar),
+                        contentDescription = "Calendario"
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showDatePicker = true } // <-- Abre el calendario al tocar cualquier parte
-            ) {
-                OutlinedTextField(
-                    value = fechaNacimiento,
-                    onValueChange = { /* No hacer nada, es de solo lectura */ },
-                    label = { Text("Fecha de Nacimiento") },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_calendar),
-                            contentDescription = "Calendario"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .pointerInput(Unit) {} // Evita que capture eventos táctiles
-                )
-            }
+                    .clickable { showDatePicker = true } // ✅ Ahora abre correctamente el calendario
+            )
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Campo de género (simple, no desplegable aún)
             ExposedDropdownMenuBox(
                 expanded = false,
                 onExpandedChange = { /* no desplegable funcional aún */ }
@@ -163,6 +152,7 @@ fun PersonalDataScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Campo de teléfono
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     painter = painterResource(id = R.drawable.flag_cl),
@@ -182,8 +172,9 @@ fun PersonalDataScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Botón para guardar
             Button(
-                onClick = { /* guardar cambios */ },
+                onClick = { /* Guardar cambios */ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6FCF97)),
                 modifier = Modifier
                     .fillMaxWidth()

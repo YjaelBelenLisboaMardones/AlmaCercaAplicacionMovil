@@ -1,5 +1,7 @@
 package com.example.almacercaapp.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -10,6 +12,7 @@ import com.example.almacercaapp.ui.theme.screen.*
 
 
 //Gestiona el flujo de alto nivel
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(navController: NavHostController) {
     NavHost(
@@ -25,11 +28,6 @@ fun NavGraph(navController: NavHostController) {
         composable("signin_method") { SignInMethodScreen(navController) }
         // `MainScreen` se encargará de mostrar `HomeScreen` y las otras pestañas.
         composable("main_screen") { MainScreen(parentNavController = navController) }
-        composable("profile") { ProfileScreen(navController) }
-        composable("faq") { FaqScreen(navController = navController) }
-        composable("help_center") { HelpCenterScreen(navController = navController) }
-        composable("support_chat") { SupportChatScreen(navController = navController) }
-
 
         composable("personal_data") {
             PersonalDataScreen(navController)
@@ -65,14 +63,6 @@ fun NavGraph(navController: NavHostController) {
             )
         }
 
-        composable("logout") {
-            LogoutScreen(navController) {
-                // Aquí haces el proceso de logout real (limpiar datos, etc.)
-                navController.navigate("login") {
-                    popUpTo("profile") { inclusive = true }
-                }
-            }
-        }
 
     }
 }
