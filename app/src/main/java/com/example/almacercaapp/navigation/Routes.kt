@@ -18,7 +18,7 @@ sealed class Routes(val route: String) {
     object Notifications : Routes("notifications")
     object Faq : Routes("faq")
     object HelpCenter : Routes("help_center")
-    object Support : Routes("support")
+    object Support : Routes("support_chat")
     object Logout : Routes("logout")
 
 }

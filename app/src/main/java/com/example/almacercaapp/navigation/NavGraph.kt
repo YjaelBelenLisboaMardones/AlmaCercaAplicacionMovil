@@ -4,20 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.almacercaapp.ui.theme.screen.OnboardingScreen
-import com.example.almacercaapp.ui.theme.screen.SplashScreen
-import com.example.almacercaapp.ui.theme.screen.SignUpScreen
-import com.example.almacercaapp.ui.theme.screen.VerificationScreen
-import com.example.almacercaapp.ui.theme.screen.SignInScreen
-import com.example.almacercaapp.ui.theme.screen.SignInMethodScreen
-import com.example.almacercaapp.ui.theme.screen.MainScreen
-import com.example.almacercaapp.ui.theme.screen.CategoryProductsScreen
-import com.example.almacercaapp.ui.theme.screen.StoreDetailScreen
-import com.example.almacercaapp.ui.theme.screen.LocationScreen
-import com.example.almacercaapp.ui.theme.screen.ProfileScreen
-import com.example.almacercaapp.ui.theme.screen.NotificationsScreen
-import com.example.almacercaapp.ui.theme.screen.PersonalDataScreen
 import com.example.almacercaapp.ui.theme.screen.*
+
+
+
 
 //Gestiona el flujo de alto nivel
 @Composable
@@ -36,6 +26,11 @@ fun NavGraph(navController: NavHostController) {
         // `MainScreen` se encargará de mostrar `HomeScreen` y las otras pestañas.
         composable("main_screen") { MainScreen(parentNavController = navController) }
         composable("profile") { ProfileScreen(navController) }
+        composable("faq") { FaqScreen(navController = navController) }
+        composable("help_center") { HelpCenterScreen(navController = navController) }
+        composable("support_chat") { SupportChatScreen(navController = navController) }
+
+
         composable("personal_data") {
             PersonalDataScreen(navController)
         }

@@ -5,11 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.almacercaapp.ui.theme.screen.CartScreen
-import com.example.almacercaapp.ui.theme.screen.ExploreScreen
-import com.example.almacercaapp.ui.theme.screen.FavoritesScreen
-import com.example.almacercaapp.ui.theme.screen.HomeScreen
-import com.example.almacercaapp.ui.theme.screen.ProfileScreen
+import com.example.almacercaapp.ui.theme.screen.*
 
 @Composable
 fun HomeNavGraph(
@@ -36,6 +32,15 @@ fun HomeNavGraph(
         }
         composable(route = "profile") {
             ProfileScreen(navController = parentNavController)
+        }
+        composable(route = "faq") {
+            FaqScreen(navController = parentNavController)
+        }
+        composable(route = "help_center") {
+            HelpCenterScreen(navController = parentNavController)
+        }
+        composable(route = "support_chat") {
+            SupportChatScreen(navController = parentNavController)
         }
     }
 }
