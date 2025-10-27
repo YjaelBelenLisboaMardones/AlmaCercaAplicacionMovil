@@ -118,6 +118,10 @@ class AuthViewModel : ViewModel() {
         return verificationError.value == null
     }
 
+
+    //ubi
+    
+
     // --- ACTUALIZADORES DE CAMPOS ---
     fun toggleMethod() { user.value = user.value.copy(useEmail = !user.value.useEmail) }
     fun updateUsername(value: String) { user.value = user.value.copy(username = value) }

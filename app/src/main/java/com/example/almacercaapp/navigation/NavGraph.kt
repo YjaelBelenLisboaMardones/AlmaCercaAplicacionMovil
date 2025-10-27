@@ -13,6 +13,8 @@ import com.example.almacercaapp.ui.theme.screen.SignInMethodScreen
 import com.example.almacercaapp.ui.theme.screen.MainScreen
 import com.example.almacercaapp.ui.theme.screen.CategoryProductsScreen
 import com.example.almacercaapp.ui.theme.screen.StoreDetailScreen
+import com.example.almacercaapp.ui.theme.screen.LocationScreen
+import com.example.almacercaapp.ui.theme.screen.ProfileScreen
 
 //Gestiona el flujo de alto nivel
 @Composable
@@ -25,10 +27,19 @@ fun NavGraph(navController: NavHostController) {
         composable("onboarding") { OnboardingScreen(navController) }
         composable("signup") { SignUpScreen(navController) }
         composable("verification") { VerificationScreen(navController) }
+        //composable("location") { LocationScreen(navController) }
         composable("signin") { SignInScreen(navController) }
         composable("signin_method") { SignInMethodScreen(navController) }
         // `MainScreen` se encargará de mostrar `HomeScreen` y las otras pestañas.
         composable("main_screen") { MainScreen(parentNavController = navController) }
+        composable("profile") { ProfileScreen(navController) }
+        composable("personal_data") {
+            PersonalDataScreen(navController)
+        }
+        composable("notifications") {
+            NotificationsScreen(navController)
+        }
+
         // ruta para la pantalla store_details
         composable("details/{storeId}") { backStackEntry ->
             // Extraemos el ID de la tienda desde los argumentos de la ruta
