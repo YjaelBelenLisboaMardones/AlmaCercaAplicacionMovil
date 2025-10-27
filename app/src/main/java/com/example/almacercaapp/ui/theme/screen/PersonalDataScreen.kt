@@ -25,6 +25,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.input.pointer.pointerInput
+
 
 // --- Función helper para convertir Millis a String ---
 @RequiresApi(Build.VERSION_CODES.O)
@@ -44,10 +46,10 @@ fun PersonalDataScreen(navController: NavController) {
     var genero by remember { mutableStateOf("Masculino") }
     var telefono by remember { mutableStateOf("+56988887777") }
 
-    // --- Estados para el DatePicker ---
+
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        // Opcional: inicializar con la fecha actual o la guardada
+
         initialSelectedDateMillis = System.currentTimeMillis()
     )
 
@@ -58,7 +60,7 @@ fun PersonalDataScreen(navController: NavController) {
                 TextButton(
                     onClick = {
                         showDatePicker = false
-                        // Actualizamos la fecha de nacimiento con la seleccionada
+
                         datePickerState.selectedDateMillis?.let {
                             fechaNacimiento = it.toFormattedDateString()
                         }
@@ -75,7 +77,7 @@ fun PersonalDataScreen(navController: NavController) {
         }
     }
 
-    // --- Se eliminó Scaffold y se reemplazó por Column ---
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -96,7 +98,7 @@ fun PersonalDataScreen(navController: NavController) {
             }
         )
 
-        // --- Contenido de la pantalla ---
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -120,22 +122,28 @@ fun PersonalDataScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // --- Campo de Fecha de Nacimiento modificado ---
-            OutlinedTextField(
-                value = fechaNacimiento,
-                onValueChange = { /* No hacer nada, es de solo lectura */ },
-                label = { Text("Fecha de Nacimiento") },
-                readOnly = true, // Lo hacemos de solo lectura
-                trailingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_calendar),
-                        contentDescription = "Calendario"
-                    )
-                },
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showDatePicker = true } // <-- Abre el diálogo al hacer clic
-            )
+                    .clickable { showDatePicker = true } // <-- Abre el calendario al tocar cualquier parte
+            ) {
+                OutlinedTextField(
+                    value = fechaNacimiento,
+                    onValueChange = { /* No hacer nada, es de solo lectura */ },
+                    label = { Text("Fecha de Nacimiento") },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_calendar),
+                            contentDescription = "Calendario"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerInput(Unit) {} // Evita que capture eventos táctiles
+                )
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 
