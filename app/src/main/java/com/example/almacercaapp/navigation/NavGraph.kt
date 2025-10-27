@@ -17,6 +17,7 @@ import com.example.almacercaapp.ui.theme.screen.LocationScreen
 import com.example.almacercaapp.ui.theme.screen.ProfileScreen
 import com.example.almacercaapp.ui.theme.screen.NotificationsScreen
 import com.example.almacercaapp.ui.theme.screen.PersonalDataScreen
+import com.example.almacercaapp.ui.theme.screen.*
 
 //Gestiona el flujo de alto nivel
 @Composable
@@ -69,6 +70,14 @@ fun NavGraph(navController: NavHostController) {
             )
         }
 
+        composable("logout") {
+            LogoutScreen(navController) {
+                // Aquí haces el proceso de logout real (limpiar datos, etc.)
+                navController.navigate("login") {
+                    popUpTo("profile") { inclusive = true }
+                }
+            }
+        }
 
     }
 }

@@ -16,7 +16,10 @@ sealed class Routes(val route: String) {
     object Profile : Routes("profile")
     object PersonalData : Routes("personal_data")
     object Notifications : Routes("notifications")
-
+    object Faq : Routes("faq")
+    object HelpCenter : Routes("help_center")
+    object Support : Routes("support")
+    object Logout : Routes("logout")
 
 }
 

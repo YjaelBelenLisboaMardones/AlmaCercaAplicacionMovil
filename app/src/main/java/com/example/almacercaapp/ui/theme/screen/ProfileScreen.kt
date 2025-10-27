@@ -83,6 +83,8 @@ fun ProfileScreen(navController: NavController) {
                 .fillMaxWidth()
                 .clickable { /* acción logout */ }
                 .padding(horizontal = 16.dp, vertical = 10.dp)
+                .clickable { navController.navigate("logout") }
+
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_logout),
