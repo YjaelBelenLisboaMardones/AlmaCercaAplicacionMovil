@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.25"
 }
 
 android {
@@ -62,7 +63,25 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material3:material3-android:1.3.1")
+    // Room (Base de datos SQLite)
+    implementation ("androidx.room:room-runtime:2.6.1")
+    implementation ("androidx.room:room-ktx:2.6.1") // Para usar corutinas con Room
+    ksp("androidx.room:room-compiler:2.6.1")
+    // Necesitas el plugin 'kotlin-kapt'
 
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // --- Coil (para imágenes locales o de red) ---
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // --- Testing ---
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
 
 
