@@ -26,7 +26,7 @@ fun ProfileScreen(navController: NavController) {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // 🔙 Encabezado
+        //Encabezado
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -57,26 +57,30 @@ fun ProfileScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 📋 Opciones del perfil
+        //Opciones del perfil
         ProfileItem("Mis Pedidos", R.drawable.ic_pedidos) {
-            // Navegación a pantalla de pedidos (opcional)
+            // Navegación a pantalla de pedidos
         }
         ProfileItem("Datos Personales", R.drawable.ic_datos) {
             navController.navigate("personal_data")
         }
         ProfileItem("Dirección", R.drawable.ic_direccion) {
-            // Aquí podrías navegar a pantalla de direcciones
+
         }
         ProfileItem("Métodos de Pago", R.drawable.ic_pago) { }
         ProfileItem("Notificaciones", R.drawable.ic_noti) {
             navController.navigate("notifications")
         }
-        ProfileItem("FAQs", R.drawable.ic_faq) { }
-        ProfileItem("Centro de Ayuda", R.drawable.ic_ayuda) { }
+        ProfileItem("FAQs", R.drawable.ic_faq) {
+            navController.navigate("faq")
+        }
+        ProfileItem("Centro de Ayuda", R.drawable.ic_ayuda) {
+            navController.navigate("help_center")
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 🚪 Botón de salir (más pequeño y proporcionado)
+        //Botón de salir
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
