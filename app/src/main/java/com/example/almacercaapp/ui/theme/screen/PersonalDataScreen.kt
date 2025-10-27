@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.almacercaapp.R
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonalDataScreen(navController: NavController) {
@@ -29,7 +30,7 @@ fun PersonalDataScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
+            TopAppBar(
                 title = { Text("Datos Personales", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {

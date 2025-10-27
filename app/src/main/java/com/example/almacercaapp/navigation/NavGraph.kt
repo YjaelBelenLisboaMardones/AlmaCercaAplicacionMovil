@@ -15,6 +15,8 @@ import com.example.almacercaapp.ui.theme.screen.CategoryProductsScreen
 import com.example.almacercaapp.ui.theme.screen.StoreDetailScreen
 import com.example.almacercaapp.ui.theme.screen.LocationScreen
 import com.example.almacercaapp.ui.theme.screen.ProfileScreen
+import com.example.almacercaapp.ui.theme.screen.NotificationsScreen
+import com.example.almacercaapp.ui.theme.screen.PersonalDataScreen
 
 //Gestiona el flujo de alto nivel
 @Composable
