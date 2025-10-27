@@ -5,9 +5,14 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.EditCalendar // <-- Icono pequeño vectorial
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,11 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.almacercaapp.R
+import com.example.almacercaapp.ui.theme.GreenPrimary
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-// --- Helper para formatear la fecha seleccionada ---
 @RequiresApi(Build.VERSION_CODES.O)
 fun Long.toFormattedDateString(): String {
     val date = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -42,11 +47,15 @@ fun PersonalDataScreen(navController: NavController) {
     var genero by remember { mutableStateOf("Masculino") }
     var telefono by remember { mutableStateOf("+56988887777") }
 
-    // Estado para el selector de fecha
+    // --- Estado para el DatePickerDialog ---
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
 
-    // --- Calendario ---
+    // --- Estado para el Dropdown de Género ---
+    var isGenderDropdownExpanded by remember { mutableStateOf(false) }
+    val genderOptions = listOf("Masculino", "Femenino", "Otro", "Prefiero no decirlo")
+
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -70,7 +79,7 @@ fun PersonalDataScreen(navController: NavController) {
         }
     }
 
-    // --- Pantalla principal ---
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -83,106 +92,150 @@ fun PersonalDataScreen(navController: NavController) {
                 }
             },
             actions = {
-                IconButton(onClick = { /* Abrir configuración */ }) {
+                IconButton(onClick = { /* Abrir notificaciones */ }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_set),
-                        contentDescription = "Configuración"
+                        painter = painterResource(id = R.drawable.ic_noti),
+                        contentDescription = "Notificaciones"
                     )
                 }
             }
         )
 
-        // Contenido del formulario
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
+
+            // --- Nombre ---
+            FormLabel("Nombre Completo")
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
-                label = { Text("Nombre Completo") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // --- Correo ---
+            FormLabel("Correo Electrónico")
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Correo Electrónico") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de fecha con calendario funcional
+
+            FormLabel("Fecha de Nacimiento")
             OutlinedTextField(
                 value = fechaNacimiento,
                 onValueChange = { },
-                label = { Text("Fecha de Nacimiento") },
                 readOnly = true,
                 trailingIcon = {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_calendar),
+                        imageVector = Icons.Default.EditCalendar,
                         contentDescription = "Calendario"
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showDatePicker = true } // ✅ Ahora abre correctamente el calendario
+                    .clickable { showDatePicker = true }
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de género (simple, no desplegable aún)
+            // --- Género (con flecha) ---
+            FormLabel("Género")
             ExposedDropdownMenuBox(
-                expanded = false,
-                onExpandedChange = { /* no desplegable funcional aún */ }
+                expanded = isGenderDropdownExpanded,
+                onExpandedChange = { isGenderDropdownExpanded = !isGenderDropdownExpanded }
             ) {
                 OutlinedTextField(
                     value = genero,
                     onValueChange = {},
-                    label = { Text("Género") },
                     readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(false) },
-                    modifier = Modifier.fillMaxWidth()
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isGenderDropdownExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
                 )
+                // --- Menú desplegable ---
+                ExposedDropdownMenu(
+                    expanded = isGenderDropdownExpanded,
+                    onDismissRequest = { isGenderDropdownExpanded = false }
+                ) {
+                    genderOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                genero = option
+                                isGenderDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de teléfono
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.drawable.flag_cl),
-                    contentDescription = "Chile",
-                    modifier = Modifier.size(30.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedTextField(
-                    value = telefono,
-                    onValueChange = { telefono = it },
-                    label = { Text("Teléfono") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            FormLabel("Teléfono")
+            OutlinedTextField(
+                value = telefono,
+                onValueChange = { telefono = it },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                leadingIcon = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.flag_cl),
+                            contentDescription = "Chile",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Icon(
+                            Icons.Default.ArrowDropDown,
+                            contentDescription = "Seleccionar país",
+                            modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-            // Botón para guardar
+            Spacer(modifier = Modifier.height(32.dp))
+
+
             Button(
                 onClick = { /* Guardar cambios */ },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6FCF97)),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(55.dp),
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text("Guardar Cambios", color = Color.White, fontSize = 16.sp)
             }
         }
     }
+}
+
+
+@Composable
+private fun FormLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(bottom = 4.dp)
+    )
 }

@@ -33,7 +33,7 @@ fun OnboardingScreen(navController: NavController) {
     ) {
         // Fondo
         Image(
-            painter = painterResource(id = R.drawable.onboarding_image), // imagen de fondo
+            painter = painterResource(id = R.drawable.onboarding), // imagen de fondo
             contentDescription = "Onboarding Background",
             contentScale = ContentScale.Crop, // rellena la pantalla sin deformarse
             modifier = Modifier.fillMaxSize()
