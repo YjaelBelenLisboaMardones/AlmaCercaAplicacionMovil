@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.0.21-1.0.25"
+    // ▼▼▼ AÑADE ESTA LÍNEA (Si usas el plugin para ocultar la clave) ▼▼▼
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -17,6 +19,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -92,6 +95,13 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7") // O la versión más reciente que te sugiera el IDE
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("io.coil-kt:coil-gif:2.5.0")
+// --- DEPENDENCIAS DE MAPAS Y GPS (AÑADE ESTO) ---
+    // Google Maps SDK for Compose
+    implementation("com.google.maps.android:maps-compose:4.3.3")
+    // Google Play Services Location (Para GPS FusedLocationProviderClient)
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    // Accompanist Permissions (Para la gestión simplificada de ACCESS_FINE_LOCATION)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 
 
 }
