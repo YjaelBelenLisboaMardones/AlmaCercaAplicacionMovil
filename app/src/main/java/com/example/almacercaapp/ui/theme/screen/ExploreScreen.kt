@@ -19,15 +19,26 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import android.provider.Settings
 import android.net.Uri        // Para la clase Uri (Uri.fromParts)
+// ▼▼▼ NUEVOS IMPORTS ▼▼▼
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+// ▲▲▲ FIN NUEVOS IMPORTS ▲▲▲
 
-@OptIn(ExperimentalPermissionsApi::class)
+
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class) // Añade ExperimentalMaterial3Api
 @Composable
 fun ExploreScreen(
     modifier: Modifier = Modifier,
     viewModel: ExploreViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current // <-- Contexto disponible aquí
+    val context = LocalContext.current
 
     // --- Gestión de Permisos ---
     val locationPermissionState = rememberPermissionState(
@@ -43,10 +54,62 @@ fun ExploreScreen(
     // --- UI Principal ---
     Column(modifier = modifier.fillMaxSize()) {
 
-        // ... (Aquí irían SearchBar y Filtros) ...
+        // --- 1. BARRA DE BÚSQUEDA ---
+        OutlinedTextField(
+            value = "", // Valor de maqueta
+            onValueChange = {}, // Acción vacía
+            placeholder = { Text("¿Qué estás buscando? (Dirección, producto o negocio)") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = MaterialTheme.shapes.extraLarge, // Más redondeado
+            colors = OutlinedTextFieldDefaults.colors( // Fondo gris claro
+                focusedContainerColor = Color(0xFFF5F5F5),
+                unfocusedContainerColor = Color(0xFFF5F5F5),
+                disabledContainerColor = Color(0xFFF5F5F5),
+                focusedBorderColor = Color.Transparent, // Sin borde al enfocar
+                unfocusedBorderColor = Color.Transparent // Sin borde normal
+            ),
+            enabled = false // Deshabilitado como maqueta
+        )
 
-        // --- Contenedor del Mapa ---
-        Box(modifier = Modifier.weight(1f)) {
+        // --- 2. FILTROS Y RESULTADOS ---
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row { // Agrupa los filtros
+                FilterChip(
+                    onClick = { /* Acción vacía */ },
+                    label = { Text("Filtro") },
+                    selected = false,
+                    trailingIcon = { Icon(Icons.Default.KeyboardArrowDown, "Expandir") }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    onClick = { /* Acción vacía */ },
+                    label = { Text("Clasificar") },
+                    selected = false,
+                    trailingIcon = { Icon(Icons.Default.KeyboardArrowDown, "Expandir") }
+                )
+            }
+            Text("35 resultados", color = Color.Gray, fontSize = 14.sp)
+        }
+
+        // --- 3. ENCABEZADO "CERCA DE TU ZONA" ---
+        Text(
+            text = "Cerca de tu zona...",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+        )
+
+        // --- 4. CONTENEDOR DEL MAPA ---
+        Box(modifier = Modifier.weight(1f)) { // El mapa ocupa el resto del espacio
             when {
                 // Estado 1: Permiso concedido, muestra el mapa
                 locationPermissionState.status.isGranted -> {
@@ -56,31 +119,26 @@ fun ExploreScreen(
                         cameraPosition = uiState.cameraPosition
                     )
                 }
-
-                // Estado 2: Debemos mostrar la explicación (el usuario lo negó, pero no permanentemente)
+                // Estado 2: Razón para el permiso
                 locationPermissionState.status.shouldShowRationale -> {
                     PermissionRationale(locationPermissionState)
                 }
-
-                // Estado 3: Permiso denegado permanentemente (último caso)
+                // Estado 3: Permiso denegado
                 else -> {
-                    PermissionDenied(context) // <-- CONTEXTO PASADO AQUÍ
+                    PermissionDenied(context)
                 }
-            } // <-- ¡FIN DEL WHEN!
-
-            // ▼▼▼ ARREGLO ESTRUCTURAL: Condición de carga fuera del when ▼▼▼
-            // Indicador de carga mientras se obtiene la ubicación
+            }
+            // Indicador de carga
             if (uiState.isLoadingLocation && locationPermissionState.status.isGranted) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
-            // ▲▲▲ FIN DEL ARREGLO ESTRUCTURAL ▲▲▲
         }
+    } // Fin Column Principal
 
-        // Limpia el listener de ubicación cuando la pantalla se va
-        DisposableEffect(Unit) {
-            onDispose {
-                viewModel.stopLocationUpdates()
-            }
+    // Limpia el listener de ubicación...
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopLocationUpdates()
         }
     }
 }
@@ -93,7 +151,7 @@ fun MapContent(
     stores: List<com.example.almacercaapp.model.Store>,
     cameraPosition: LatLng
 ) {
-    // ... (Tu código de MapContent, sin cambios) ...
+    // ... (Código de CameraPositionState y LaunchedEffect igual)
     // Controla la posición de la cámara del mapa
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(cameraPosition, 15f) // Zoom inicial
@@ -107,30 +165,42 @@ fun MapContent(
         )
     }
 
+
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
-        // Habilita el punto azul de "Mi Ubicación" en el mapa
         properties = MapProperties(isMyLocationEnabled = userLocation != null),
-        uiSettings = MapUiSettings(myLocationButtonEnabled = true) // Habilita el botón de centrar
+        uiSettings = MapUiSettings(myLocationButtonEnabled = true)
     ) {
         // Marcador para la ubicación del usuario (opcional)
         userLocation?.let {
-            // Marker(state = MarkerState(position = it), title = "Tú estás aquí")
+            // Marker(...)
         }
 
         // Marcadores para las tiendas
         stores.forEach { store ->
+            // ▼▼▼ LÓGICA PARA CAMBIAR EL MARCADOR ▼▼▼
+            val icon: BitmapDescriptor = if (store.name.contains("Patricio", ignoreCase = true)) {
+                // Si es "Patricio & Mily", usa un marcador verde (puedes crear uno)
+                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+            } else {
+                // Para las demás, usa el marcador rojo por defecto
+                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+            }
+            // ▲▲▲ FIN LÓGICA MARCADOR ▲▲▲
+
             Marker(
                 state = MarkerState(position = LatLng(store.lat, store.lng)),
                 title = store.name,
-                snippet = store.address // Texto que aparece al tocar el marcador
-                // Puedes personalizar el ícono: icon = BitmapDescriptorFactory.fromResource(...)
+                snippet = store.address,
+                icon = icon // <-- USA EL ÍCONO PERSONALIZADO
+                // Puedes añadir onClick = { ... } para manejar clics en marcadores
             )
         }
     }
 }
 
+// ... (PermissionRationale y PermissionDenied se quedan igual)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PermissionRationale(locationPermissionState: PermissionState) {
