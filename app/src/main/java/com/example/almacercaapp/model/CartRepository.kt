@@ -11,7 +11,22 @@ data class CartUiState(
     val items: List<CartItem> = emptyList(),
     val productAddedMessage: String? = null
 ) {
+    // --- LÓGICA DE CÁLCULO DE TOTALES ---
+    private val subtotal: Double get() = items.sumOf { it.product.price * it.quantity }
+    val impuestos: Double get() = subtotal * 0.19 // 19% de IVA (Chile)
+    val total: Double get() = subtotal + impuestos
+
+    // --- PROPIEDADES FORMATEADAS PARA LA UI ---
+    val formattedSubtotal: String get() = formatPrice(subtotal)
+    val formattedImpuestos: String get() = formatPrice(impuestos)
+    val formattedTotal: String get() = formatPrice(total)
     val totalItems: Int get() = items.sumOf { it.quantity }
+    // Función de ayuda para formatear
+    private fun formatPrice(price: Double): String {
+        val format = NumberFormat.getCurrencyInstance(Locale.Builder().setLanguage("es").setRegion("CL").build())
+        format.maximumFractionDigits = 0
+        return format.format(price)
+    }
     private val totalPrice: Double get() = items.sumOf { it.product.price * it.quantity }
     val formattedTotalPrice: String get() {
         val format = NumberFormat.getCurrencyInstance(Locale.Builder().setLanguage("es").setRegion("CL").build())
@@ -96,6 +111,12 @@ object CartRepository {
                 currentState.items + CartItem(product = product, quantity = quantityToAdd)
             }
             currentState.copy(items = newItems)
+        }
+    }
+
+    fun clearCart() {
+        _uiState.update { currentState ->
+            currentState.copy(items = emptyList())
         }
     }
 

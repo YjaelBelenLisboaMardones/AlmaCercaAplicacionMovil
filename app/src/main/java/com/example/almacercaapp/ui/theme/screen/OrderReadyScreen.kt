@@ -32,7 +32,7 @@ fun OrderReadyScreen(
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Éxito",
-                tint = MaterialTheme.colorScheme.primary, // Color verde
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(100.dp)
             )
             Text(
@@ -46,7 +46,7 @@ fun OrderReadyScreen(
                 textAlign = TextAlign.Center
             )
             Button(
-                onClick = onGoToHome, // Navega al inicio
+                onClick = onGoToHome,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)

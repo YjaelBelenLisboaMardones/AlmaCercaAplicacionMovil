@@ -16,7 +16,7 @@ import androidx.navigation.navArgument
 import com.example.almacercaapp.data.local.user.UserRole
 import com.example.almacercaapp.ui.theme.screen.*
 import com.example.almacercaapp.viewmodel.AuthViewModel
-
+import com.example.almacercaapp.model.CartRepository // Importa CartRepository
 // Gestiona el flujo de alto nivel
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable // <-- ¡LA ETIQUETA ESTÁ EN LA ÚNICA FUNCIÓN!
@@ -52,9 +52,12 @@ fun NavGraph(
         // Pantalla de registro de nuevo usuario (recibe un rol)
         composable(
             route = Routes.SignUp.route,
-            arguments = listOf(navArgument("userRole") { type = NavType.EnumType(UserRole::class.java) })
+            arguments = listOf(navArgument("userRole") {
+                type = NavType.EnumType(UserRole::class.java)
+            })
         ) { backStackEntry ->
-            val role = backStackEntry.arguments?.getSerializable("userRole") as? UserRole ?: UserRole.BUYER
+            val role =
+                backStackEntry.arguments?.getSerializable("userRole") as? UserRole ?: UserRole.BUYER
             SignUpScreen(
                 navController = navController,
                 viewModel = authViewModel,
@@ -164,15 +167,16 @@ fun NavGraph(
             exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) },
             popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
-        ) {
-            CheckoutScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToProcessing = {
-                    navController.navigate("processing_order") {
-                        popUpTo("home") { inclusive = false }
-                    }
+        ) {CheckoutScreen(
+            onBack = { navController.popBackStack() },
+            onNavigateToProcessing = {
+                // ▼▼▼ LLAMADA PARA VACIAR EL CARRITO AQUÍ ▼▼▼
+                CartRepository.clearCart() // Vacía el carrito antes de ir a procesamiento
+                navController.navigate("processing_order") {
+                    popUpTo("home") { inclusive = false }
                 }
-            )
+            }
+        )
         }
 
         composable("processing_order") {
@@ -188,8 +192,13 @@ fun NavGraph(
         composable("order_ready") {
             OrderReadyScreen(
                 onGoToHome = {
-                    navController.navigate("home") {
-                        popUpTo("home") { inclusive = true }
+                    // ▼▼▼ CORRECCIÓN AQUÍ ▼▼▼
+                    navController.navigate("main_screen?start_destination=home") {
+                        // Limpia toda la pila de navegación de checkout (checkout, processing, order_ready)
+                        // y vuelve a la pantalla principal.
+                        popUpTo("main_screen") {
+                            inclusive = true
+                        }
                     }
                 }
             )
