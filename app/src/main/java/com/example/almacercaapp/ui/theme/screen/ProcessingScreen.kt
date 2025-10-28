@@ -19,7 +19,7 @@ fun ProcessingScreen(
     // Simula una carga de 3 segundos
     LaunchedEffect(key1 = true) {
         delay(3000L) // 3 segundos
-        onOrderProcessed() // Llama a la navegación cuando termina
+        onOrderProcessed() // Navega a la pantalla final
     }
 
     Box(
@@ -30,6 +30,7 @@ fun ProcessingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            // (Aquí podrías poner tu GIF en lugar del indicador)
             CircularProgressIndicator(modifier = Modifier.size(64.dp))
             Text(
                 text = "Estamos procesando tu compra...",
