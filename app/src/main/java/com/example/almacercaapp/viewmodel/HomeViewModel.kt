@@ -1,4 +1,5 @@
 package com.example.almacercaapp.viewmodel
+
 import androidx.lifecycle.ViewModel
 import com.example.almacercaapp.R
 import com.example.almacercaapp.model.Store
@@ -21,13 +22,19 @@ class HomeViewModel : ViewModel() {
 
 
     // --- SIMULACIÓN DE UN REPOSITORIO (datos de prueba) ---
+    private val categoriesData = listOf(
+        Category(501,"Minimarket", R.drawable.cat_minimarket),
+        Category(502,"Botillería", R.drawable.cat_botilleria),
+        Category(504,"Bazar", R.drawable.cat_bazar),
+        Category(505,"Almacen", R.drawable.cat_almacen)
+    )
 
     // 1. Datos para las tiendas "En tu zona"
     private val storesData = listOf(
         Store(
             id = 1,
             name = "Botillería La Esquina",
-            category = "Botillería",
+            storeCategoryId = 502,
             address = "...",
             distance = "150 m",
             logoRes = R.drawable.logo_esquina,
@@ -38,7 +45,7 @@ class HomeViewModel : ViewModel() {
         Store(
             id = 2,
             name = "Almacen y Bazar Sandra",
-            category = "Almacen & Bazar",
+            storeCategoryId = 505,
             address = "...",
             distance = "300 m",
             logoRes = R.drawable.logo_sandra,
@@ -49,7 +56,7 @@ class HomeViewModel : ViewModel() {
         Store(
             id = 3,
             name = "Almacen Mar",
-            category = "Almacen",
+            storeCategoryId = 505,
             address = "...",
             distance = "500 m",
             logoRes = R.drawable.logo_mariluna,
@@ -60,12 +67,7 @@ class HomeViewModel : ViewModel() {
     )
 
     // 2. Datos para las categorías
-    private val categoriesData = listOf(
-        Category("Minimarket", R.drawable.cat_minimarket),
-        Category("Botillería", R.drawable.cat_botilleria),
-        Category("Bazar", R.drawable.cat_bazar),
-        Category("Almacen", R.drawable.cat_almacen)
-    )
+
 
     // --- FIN DE LA SIMULACIÓN ---
 
@@ -89,16 +91,16 @@ class HomeViewModel : ViewModel() {
 
     // 5. Método de búsqueda general
     private fun filterResults(currentQuery: String) {
-        val allStoresForSearch = storesData // Usamos los mismos datos para buscar
         val filteredList = if (currentQuery.isNotBlank()) {
-            allStoresForSearch.filter {
-                it.name.contains(currentQuery, ignoreCase = true) ||
-                        it.category.contains(currentQuery, ignoreCase = true)
+            storesData.filter { store ->
+                // Buscamos el nombre de la categoría correspondiente al ID de la tienda
+                val categoryName = categoriesData.find { it.id == store.storeCategoryId }?.name ?: ""
+                store.name.contains(currentQuery, ignoreCase = true) ||
+                        categoryName.contains(currentQuery, ignoreCase = true)
             }
         } else {
             emptyList()
         }
-        // Actualiza los 'searchResults' en el StateFlow
         _uiState.update { it.copy(searchResults = filteredList) }
     }
 

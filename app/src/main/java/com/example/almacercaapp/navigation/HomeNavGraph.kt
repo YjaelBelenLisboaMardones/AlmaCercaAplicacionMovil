@@ -12,19 +12,21 @@ import com.example.almacercaapp.ui.theme.screen.ExploreScreen
 import com.example.almacercaapp.ui.theme.screen.FavoritesScreen
 import com.example.almacercaapp.ui.theme.screen.HomeScreen
 import com.example.almacercaapp.ui.theme.screen.ProfileScreen
-
+import com.example.almacercaapp.ui.theme.screen.* // Importa todas tus pantallas
 
 //Gestiona la navegacion interna entre las 5 pestañas del navigationbar
 @Composable
 fun HomeNavGraph(
     navController: NavHostController,
     parentNavController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    startDestination: String
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home",
-        modifier = modifier //Aplica el padding del Scaffold
+        modifier = modifier,
+        startDestination = startDestination// Ckya que recibe la funcion como parametro hacemos que sea flexible el homenavgraph
+        //dejandonos que pueda moverse dependiendo del caso
     ) {
 
         composable(route = "home") {

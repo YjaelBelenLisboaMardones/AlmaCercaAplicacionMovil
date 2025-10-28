@@ -86,6 +86,10 @@ fun StoreDetailContent(
     // ¡CLAVE! Obtenemos la tienda desde el uiState que recibimos.
     val store = uiState.store!!
 
+    // Obtenemos el nombre de la categoría ("Botillería") a partir del ID (2) que tiene la tienda.
+    // Lo leemos del uiState, que es la fuente de verdad que nos da el ViewModel.
+    val storeCategoryName = uiState.storeCategoryName
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -97,7 +101,8 @@ fun StoreDetailContent(
                 .fillMaxWidth()
                 .height(250.dp)
         ) {
-            val headerImage = getHeaderImageForCategory(store.category)
+            // Le pasamos el NOMBRE de la categoría a la función.
+            val headerImage = getHeaderImageForCategory(storeCategoryName)
             Image(
                 painter = painterResource(id = headerImage),
                 contentDescription = "Imagen de ${store.name}",
@@ -169,7 +174,9 @@ fun StoreDetailContent(
                         onClick = {
                             // 4. Usa el parentNavController para navegar a la nueva ruta,
                             // pasando dinámicamente el ID de la tienda y el nombre de la categoría.
-                            parentNavController.navigate("products/${store.id}/${category.name}")
+
+                            parentNavController.navigate(
+                                "products/${store.id}/${category.id}"                            )
                         }
                     )
                 }

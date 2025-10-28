@@ -163,8 +163,10 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(uiState.storesInYourArea) { store ->
+                val categoryName = uiState.categories.find { it.id == store.storeCategoryId }?.name ?: ""
                 StoreItem(
                     store = store,
+                    categoryName = categoryName, // <-- Le pasamos el nombre
                     onClick ={
                         parentNavController.navigate("details/${store.id}")
                     })
@@ -207,6 +209,7 @@ fun CategoryItem(category: Category) {
 @Composable
 fun StoreItem(
     store: Store,
+    categoryName: String, // <-- Acepta el nombre de la categoría como parámetro
     onClick: () -> Unit
 ) {
     Column(
@@ -229,7 +232,7 @@ fun StoreItem(
             modifier = Modifier.padding(top = 8.dp)
         )
         Text(
-            text = store.category,
+            text = categoryName,
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray
         )
