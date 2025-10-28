@@ -27,7 +27,12 @@ sealed class Routes(val route: String) {
     object SellerMain : Routes("seller_main_screen")    // Pantalla principal del vendedor
     object SellerDashboard : Routes("seller_dashboard") // Pantalla inicial del vendedor
     object SellerProducts : Routes("seller_products")
-
+    object SellerAddEditProduct : Routes("seller_add_edit_product?productId={productId}") {
+        // Helper para añadir (sin ID)
+        fun addRoute() = "seller_add_edit_product"
+        // Helper para editar (con ID)
+        fun editRoute(productId: Long) = "seller_add_edit_product?productId=$productId"
+    }
 
 }
 

@@ -6,6 +6,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.almacercaapp.ui.theme.screen.SellerDashboardScreen
+import com.example.almacercaapp.ui.theme.screen.SellerProductsScreen
+import com.example.almacercaapp.ui.theme.screen.AddEditProductScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 
 @Composable
@@ -20,13 +25,29 @@ fun SellerNavGraph(
         modifier = modifier
     ) {
         composable(Routes.SellerDashboard.route) {
-            // SellerDashboardScreen(navController)
-            androidx.compose.material3.Text("TODO: Seller Dashboard") // Placeholder inicial
+
+            SellerDashboardScreen(navController = navController)
         }
         composable(Routes.SellerProducts.route) {
-            // SellerProductsScreen(navController)
-            androidx.compose.material3.Text("TODO: Seller Products") // Placeholder inicial
+            SellerProductsScreen(navController = navController)
         }
 
+        composable(
+            route = Routes.SellerAddEditProduct.route,
+            arguments = listOf(navArgument("productId") { // Define el argumento
+                type = NavType.StringType // Usamos String para permitir nulo fácilmente
+                nullable = true
+                defaultValue = null // Valor por defecto si no se pasa (añadir)
+            })
+        ) { backStackEntry ->
+            // Extrae el productId (puede ser null)
+            val productIdString = backStackEntry.arguments?.getString("productId")
+            val productId = productIdString?.toLongOrNull() // Convierte a Long o null
+
+            AddEditProductScreen(
+                navController = navController,
+                productId = productId // Pasa el ID (o null) a la pantalla
+            )
+        }
     }
 }
