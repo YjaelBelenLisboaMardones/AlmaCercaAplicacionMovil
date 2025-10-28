@@ -1,6 +1,7 @@
-
 package com.example.almacercaapp.navigation
 
+import android.os.Build // <-- AÑADE ESTA IMPORTACIÓN
+import androidx.annotation.RequiresApi // <-- AÑADE ESTA IMPORTACIÓN
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -11,8 +12,15 @@ import com.example.almacercaapp.ui.theme.screen.SellerProductsScreen
 import com.example.almacercaapp.ui.theme.screen.AddEditProductScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+// --- AÑADE TODAS ESTAS IMPORTACIONES ---
+import com.example.almacercaapp.ui.theme.screen.FaqScreen
+import com.example.almacercaapp.ui.theme.screen.HelpCenterScreen
+import com.example.almacercaapp.ui.theme.screen.NotificationsScreen
+import com.example.almacercaapp.ui.theme.screen.PersonalDataScreen
+import com.example.almacercaapp.ui.theme.screen.SupportChatScreen
+// ----------------------------------------
 
-
+@RequiresApi(Build.VERSION_CODES.O) // <-- AÑADE ESTO (requerido por PersonalDataScreen)
 @Composable
 fun SellerNavGraph(
     navController: NavHostController,
@@ -25,7 +33,6 @@ fun SellerNavGraph(
         modifier = modifier
     ) {
         composable(Routes.SellerDashboard.route) {
-
             SellerDashboardScreen(navController = navController)
         }
         composable(Routes.SellerProducts.route) {
@@ -49,5 +56,23 @@ fun SellerNavGraph(
                 productId = productId // Pasa el ID (o null) a la pantalla
             )
         }
+
+        // --- RUTAS NUEVAS AÑADIDAS PARA EL MENÚ ---
+        composable(Routes.PersonalData.route) {
+            PersonalDataScreen(navController = navController)
+        }
+        composable(Routes.Notifications.route) {
+            NotificationsScreen(navController = navController)
+        }
+        composable(Routes.Faq.route) {
+            FaqScreen(navController = navController)
+        }
+        composable(Routes.HelpCenter.route) {
+            HelpCenterScreen(navController = navController)
+        }
+        composable(Routes.Support.route) {
+            SupportChatScreen(navController = navController)
+        }
+        // ------------------------------------------
     }
 }
