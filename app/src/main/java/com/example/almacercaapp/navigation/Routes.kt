@@ -1,11 +1,14 @@
 package com.example.almacercaapp.navigation
+import com.example.almacercaapp.data.local.user.UserRole
 
-import androidx.compose.material3.Text
 //archivo que se asegura que las rutas esten bien escritas
 sealed class Routes(val route: String) {
     object Splash : Routes("splash")
     object Onboarding : Routes("onboarding")
-    object SignUp : Routes("signup")
+    object RoleSelection : Routes("role_selection")
+    object SignUp : Routes("signup/{userRole}"){
+        fun createRoute(role: UserRole) = "signup/$role" // Nueva función para crear la ruta
+    }
     object Verification : Routes("verification")
     object Location : Routes("location")
     object SignIn : Routes("signin")
@@ -21,6 +24,9 @@ sealed class Routes(val route: String) {
     object Support : Routes("support_chat")
     object Logout : Routes("logout")
     object MainScreen : Routes("main_screen")
+    object SellerMain : Routes("seller_main_screen")    // Pantalla principal del vendedor
+    object SellerDashboard : Routes("seller_dashboard") // Pantalla inicial del vendedor
+    object SellerProducts : Routes("seller_products")
 
 
 }

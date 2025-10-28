@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update // <-- Asegúrate que esté importado
 import kotlinx.coroutines.launch
+import com.example.almacercaapp.data.local.user.UserRole
 
 class AuthViewModel(private val repository: UserRepository) : ViewModel() { // <-- Inyecta el repositorio
 
@@ -42,6 +43,16 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() { // <
         startCountdown()
     }
 
+    //estado para rol seleccionado en la pantalla de registro
+    var selectedRole = mutableStateOf(UserRole.BUYER)
+
+    //Funcion para que la ui cabie de rol
+    fun updateRole(newRole: UserRole) {
+        selectedRole.value = newRole
+    }
+
+
+
     // --- Lógica de Temporizador (sin cambios) ---
     fun startCountdown() {
         canResend.value = false
@@ -61,17 +72,21 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() { // <
         }
     }
 
-    // --- Lógica de LOGIN (MODIFICADA) ---
+
+
+    //guarda el user
+    var loggedInUserRole = mutableStateOf<UserRole?>(null)
+
     fun submitLogin() { // Renombrado
         if (validateLoginFields()) { // Llama a la validación de campos
             viewModelScope.launch {
-                // Opcional: Mostrar estado de carga si tienes un campo para ello
+
                 // _uiState.update { it.copy(isSubmitting = true, errorMsg = null) }
 
                 // Determina si se usa email o teléfono (IMPORTANTE: Repositorio actual solo usa email)
                 if (!user.value.useEmail) {
                     phoneError.value = "Inicio de sesión con teléfono no implementado." // Muestra error
-                    // Opcional: Ocultar estado de carga si lo mostraste
+
                     // _uiState.update { it.copy(isSubmitting = false) }
                     return@launch // Detiene la ejecución si se intenta con teléfono
                 }
@@ -85,15 +100,21 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() { // <
                 if (result.isSuccess) {
                     _loginSuccess.value = true // Indica éxito a la UI
                     passwordError.value = null // Limpia errores previos
-                    emailError.value = null
+                    emailError.value = null // Limpia errores previos
+                    loggedInUserRole.value = result.getOrNull()?.role
+                    _loginSuccess.value = true // Indica éxito a la UI
                 } else {
                     // Muestra el mensaje de error del repositorio (ej. "Credenciales inválidas")
                     passwordError.value = result.exceptionOrNull()?.message ?: "Error al iniciar sesión"
                 }
-                // Opcional: Ocultar estado de carga
+
                 // _uiState.update { it.copy(isSubmitting = false) }
             }
         }
+    }
+    fun onLoginNavigationDone() {
+        _loginSuccess.value = false
+        loggedInUserRole.value = null //limpia rol
     }
 
     // Renombrado: Valida solo que los campos no estén vacíos y tengan formato básico
@@ -111,9 +132,6 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() { // <
     }
 
     // Función para resetear el estado de éxito del login después de navegar
-    fun onLoginNavigationDone() {
-        _loginSuccess.value = false
-    }
 
 
     // --- Lógica de REGISTRO (MODIFICADA) ---
@@ -129,7 +147,8 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() { // <
                     // Asegúrate de pasar el valor correcto según useEmail
                     email = if (user.value.useEmail) user.value.email.trim() else "",
                     phone = if (!user.value.useEmail) user.value.phoneNumber.trim() else "",
-                    password = user.value.password // No usar trim()
+                    password = user.value.password, // No usar trim()
+                    role = selectedRole.value
                 )
 
                 if (result.isSuccess) {

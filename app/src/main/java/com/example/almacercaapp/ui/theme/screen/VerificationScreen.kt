@@ -4,7 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.* // Importa todo lo necesario de runtime
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -13,15 +13,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.lifecycle.viewmodel.compose.viewModel
+
 import com.example.almacercaapp.viewmodel.AuthViewModel
-import com.example.almacercaapp.navigation.Routes
-import com.example.almacercaapp.ui.theme.screen.MainScreen
+
+import com.example.almacercaapp.data.local.user.UserRole // Importa UserRole
+import com.example.almacercaapp.ui.theme.GreenPrimary // Importa tu color
 
 @Composable
 fun VerificationScreen(
     navController: NavController,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel // Recibe el ViewModel
 ) {
     val user = viewModel.user.value
     val code = viewModel.verificationCode.value
@@ -60,7 +61,8 @@ fun VerificationScreen(
                 label = { Text("Código de verificación") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = viewModel.verificationError.value != null
             )
 
             if (viewModel.verificationError.value != null) {
@@ -74,17 +76,26 @@ fun VerificationScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+
             Button(
                 onClick = {
                     if (viewModel.validateVerification()) {
-                        navController.navigate(Routes.MainScreen.route) {
-                            // Borra TODAS las pantallas anteriores (Splash, Onboarding, SignUp, Verification)
-                            // para que el usuario no pueda volver a ellas con el botón "Atrás".
-                            popUpTo(0) { inclusive = true }
+                        //Lee el rol del ViewModel (el que se seleccionó en SignUp)
+                        val userRole = viewModel.selectedRole.value
+
+                        // --- Elige destino según el rol ---
+                        val destination = when (userRole) {
+                            UserRole.BUYER -> "main_screen"
+                            UserRole.SELLER -> "seller_main_screen"
+                            // else -> Routes.RoleSelection.route
+                        }
+
+                        navController.navigate(destination) {
+                            popUpTo(0) { inclusive = true } // Limpia la pila
                         }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6FCF97)),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp)
@@ -92,7 +103,9 @@ fun VerificationScreen(
                 Text("Verificar", color = Color.White, fontSize = 18.sp)
             }
 
+
             Spacer(modifier = Modifier.height(20.dp))
+
 
             if (canResend) {
                 Text(

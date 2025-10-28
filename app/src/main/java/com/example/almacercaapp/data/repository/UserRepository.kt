@@ -2,6 +2,8 @@ package com.example.almacercaapp.data.repository
 
 import com.example.almacercaapp.data.local.user.UserDao
 import com.example.almacercaapp.data.local.user.UserEntity
+import com.example.almacercaapp.data.local.user.UserRole
+
 
 // Repositorio: actua como intermediario entre la logica de negocio (el authViewModel) y la base de datos (el userDao).
 //su proposito es abstraer de donde vienen los datos.
@@ -25,7 +27,7 @@ class UserRepository(
     }
 
     // Registro: valida no duplicado y crea nuevo usuario (con teléfono)
-    suspend fun register(name: String, email: String, phone: String, password: String): Result<Long> {
+    suspend fun register(name: String, email: String, phone: String, password: String, role: UserRole): Result<Long> {
         // Verifica si ya existe un usuario con ese email
         val exists = userDao.getByEmail(email) != null
         if (exists) {
@@ -37,7 +39,8 @@ class UserRepository(
             name = name,
             email = email,
             phone = phone, // Incluye el teléfono
-            password = password // Usa la contraseña proporcionada
+            password = password, // Usa la contraseña proporcionada
+            role = role
         )
         // Inserta el nuevo usuario usando el DAO
         val id = userDao.insert(newUser)

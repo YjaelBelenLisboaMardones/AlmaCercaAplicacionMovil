@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 // @Database registra las entidades (tablas) y la versión del esquema.
 @Database(
     entities = [UserEntity::class], // Lista de entidades (tablas) en la base de datos
-    version = 1,                    // Incrementa esta versión cuando modifiques la base de datos
+    version = 2,                    // Incrementa esta versión cuando modifiques la base de datos
     exportSchema = true             // Permite exportar el esquema de la base de datos
 )
 abstract class AppDatabase : RoomDatabase() {

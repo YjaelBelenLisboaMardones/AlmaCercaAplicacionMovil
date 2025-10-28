@@ -21,6 +21,8 @@ import androidx.navigation.NavController
 import com.example.almacercaapp.R
 import androidx.compose.material3.MaterialTheme
 import com.example.almacercaapp.navigation.Routes
+import com.example.almacercaapp.ui.theme.GreenPrimary
+import androidx.compose.foundation.clickable
 
 
 
@@ -83,6 +85,20 @@ fun OnboardingScreen(navController: NavController) {
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+
+                text = "Crea una cuenta nueva",
+                color = GreenPrimary, // Color verde
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.clickable {
+
+                    navController.navigate(Routes.RoleSelection.route)
+                }
+            )
         }
     }
 }

@@ -4,8 +4,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.almacercaapp.data.local.user.UserRole
 import com.example.almacercaapp.ui.theme.screen.*
 import com.example.almacercaapp.viewmodel.AuthViewModel
 
@@ -14,52 +17,72 @@ import com.example.almacercaapp.viewmodel.AuthViewModel
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    authViewModel: AuthViewModel //se añade el parametro
+    authViewModel: AuthViewModel // Recibe el ViewModel
 ) {
     NavHost(
         navController = navController,
-        startDestination = "splash" // muestra el punto de partida...
+        startDestination = Routes.Splash.route // Usamos la ruta definida en Routes
     ) {
-        composable("splash") { SplashScreen(navController) }
-        composable("onboarding") { OnboardingScreen(navController) }
-        composable("signup") {
-            // Pasa el ViewModel a SignUpScreen
+
+        composable(Routes.Splash.route) { SplashScreen(navController) }
+        composable(Routes.Onboarding.route) { OnboardingScreen(navController) } // Navega a RoleSelection
+
+
+        composable(Routes.RoleSelection.route) {
+            RoleSelectionScreen(navController)
+        }
+
+        composable(
+            route = Routes.SignUp.route, // Usa la ruta "signup/{userRole}"
+            arguments = listOf(navArgument("userRole") { type = NavType.EnumType(UserRole::class.java) }) // Define el argumento
+        ) { backStackEntry ->
+            // Extrae el rol de la ruta, con fallback seguro a BUYER
+            val role = backStackEntry.arguments?.getSerializable("userRole") as? UserRole ?: UserRole.BUYER
             SignUpScreen(
                 navController = navController,
-                viewModel = authViewModel
+                viewModel = authViewModel,
+                selectedRole = role // Pasa el rol extraído
             )
         }
-        composable("verification") {
-            // Pasa el ViewModel a VerificationScreen (si lo necesita)
-            // Si no lo necesita, puedes dejarlo como estaba.
-            // Asumiendo que lo necesita para leer el email/teléfono o algo:
+
+
+        // --- Pantalla Verificación ---
+        composable(Routes.Verification.route) {
             VerificationScreen(
                 navController = navController,
-                viewModel = authViewModel // Ajusta si tu VerificationScreen no lo usa
+                viewModel = authViewModel // Pasa el ViewModel
             )
         }
-        //composable("location") { LocationScreen(navController) }
-        composable("signin") {
-            // PASO 4: Pasa el ViewModel a SignInScreen
+
+
+
+        composable(Routes.Location.route) {
+            LocationScreen(/* navController = navController */)
+        }
+
+
+
+        composable(Routes.SignIn.route) {
             SignInScreen(
                 navController = navController,
-                viewModel = authViewModel
+                viewModel = authViewModel // Pasa el ViewModel
             )
         }
-        composable("signin_method") {
-            SignInMethodScreen(navController = navController) // Esta pantalla no necesita el VM
+        composable(Routes.SignInMethod.route) {
+            SignInMethodScreen(navController = navController)
         }
-        // `MainScreen` se encargará de mostrar `HomeScreen` y las otras pestañas.
-        composable("main_screen") {
-            // MainScreen tampoco necesita el VM directamente aquí
+
+
+
+        composable("main_screen") { // Pantalla principal del Comprador
             MainScreen(parentNavController = navController)
         }
+        composable(Routes.SellerMain.route) { // Pantalla principal del Vendedor
+            SellerMainScreen(parentNavController = navController)
+        }
 
-        // --- Estas rutas ya estaban bien movidas a HomeNavGraph ---
-        // composable("personal_data") { ... }
-        // composable("notifications") { ... }
 
-        // --- Estas rutas también están bien aquí ---
+
         composable("details/{storeId}") { backStackEntry ->
             val storeId = backStackEntry.arguments?.getString("storeId")
             StoreDetailScreen(
@@ -77,5 +100,6 @@ fun NavGraph(
                 onBack = { navController.popBackStack() }
             )
         }
+
     }
 }

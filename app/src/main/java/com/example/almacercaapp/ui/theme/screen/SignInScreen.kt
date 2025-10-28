@@ -1,6 +1,5 @@
 package com.example.almacercaapp.ui.theme.screen
 
-import androidx.compose.foundation.Image // Asegúrate que Image esté importado si HeaderLogo no lo cubre
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -17,14 +16,15 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.lifecycle.viewmodel.compose.viewModel // Importa viewModel
+
 import com.example.almacercaapp.viewmodel.AuthViewModel
 import com.example.almacercaapp.ui.theme.component.HeaderLogo
 import com.example.almacercaapp.ui.theme.component.PrimaryButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.runtime.collectAsState
-import com.example.almacercaapp.navigation.Routes // Importa Routes si lo usas en popUpTo
+import com.example.almacercaapp.data.local.user.UserRole
+
 
 @Composable
 fun SignInScreen(
@@ -35,11 +35,16 @@ fun SignInScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     val loginSuccess by viewModel.loginSuccess.collectAsState()
 
-    // --- Efecto para navegar al tener éxito ---
-    // (Este ya estaba bien en tu código anterior)
+
     LaunchedEffect(key1 = loginSuccess) {
         if (loginSuccess) {
-            navController.navigate("main_screen") {
+            val userRole = viewModel.loggedInUserRole.value
+            val destination = when (userRole) {
+                UserRole.BUYER -> "main_screen"
+                UserRole.SELLER -> "seller_main_screen"
+                null -> "signin_method" // Ruta de fallback si algo raro pasa
+            }
+            navController.navigate(destination) {
                 popUpTo(0) { inclusive = true }
             }
             viewModel.onLoginNavigationDone() // Resetea el estado
@@ -68,7 +73,7 @@ fun SignInScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Correo o número ---
+
             if (user.useEmail) {
                 OutlinedTextField(
                     value = user.email,
@@ -121,7 +126,7 @@ fun SignInScreen(
                 modifier = Modifier.fillMaxWidth(),
                 isError = viewModel.passwordError.value != null // Muestra borde rojo
             )
-            // Muestra el error de contraseña (puede ser de validación local o del servidor)
+
             if (viewModel.passwordError.value != null) {
                 Text(
                     text = viewModel.passwordError.value!!,
@@ -133,17 +138,17 @@ fun SignInScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Botón de login (CORREGIDO) ---
+
             PrimaryButton(
                 text = "Entrar",
                 onClick = {
-                    viewModel.submitLogin() // <-- Llama al método correcto
+                    viewModel.submitLogin()
                 }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Alternar entre correo y número ---
+
             Text(
                 text = if (user.useEmail) "Usar número telefónico"
                 else "Usar correo electrónico",
@@ -153,7 +158,7 @@ fun SignInScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- Crear cuenta ---
+
             Row {
                 Text("¿No tienes cuenta? ")
                 Text(
