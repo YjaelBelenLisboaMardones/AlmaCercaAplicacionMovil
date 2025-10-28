@@ -22,16 +22,18 @@ CRUD de Productos: Funcionalidad para Agregar, Editar y Eliminar productos a tra
 Soporte: Pantallas de FAQ, Centro de Ayuda y Soporte/Chat disponibles en el menú lateral.
 ## 3. Pasos para la Ejecución
 Requisitos
--Android Studio (Versión reciente).
--SDK Mínimo: API 24 (Android 7.0).
-
--Ejecución y Verificación
+- Android Studio (Versión reciente).
+- Mínimo: API 24 (Android 7.0).
+- Ejecución y Verificación
 Limpiar Proyecto: Vaya a Build > Clean Project. Sincronizar y Ejecutar
 Verificar Persistencia: Use el Database Inspector de Android Studio para confirmar que las tablas users y guardan los datos correctamente.
 
-## Futuras Implementaciones
--(URGENTE) Realizar la conexión de los productos guardados a la base de datos.
--(URGENTE) Conectar formulario de datos personales con UserEntity para que los cambios se guarden en la base de datos.
--(POR HACER) Realizar un formulario aparte para el vendedor.
--(POR HACER) Cambiar colores para los botones.
--(POR HACER) Modificar las notificaciones.
+## Futuras Implementaciones ¡¡(POR HACER)!!
+- (URGENTE) Realizar base de datos para los productos guardados.
+  (Conectar el formulario de PersonalDataScreen con UserEntity para permitir la edición y guardado de los datos del usuario logueado (tanto comprador como vendedor) en la base de datos.)
+- (URGENTE) Conectar formulario de datos personales con UserEntity para que los cambios se guarden en la base de datos.
+- (ALTA) Subida y Persistencia de Imágenes: Implementar lógica para que el vendedor pueda subir la imagen del producto en AddEditProductScreen y guardar su URL/ruta en la base de datos (ProductEntity)
+- (ALTA) Implementar ubicación al crear usuario: Pedir que el usuario coloque su ubicación al crearse una cuenta
+- (MEDIA) Realizar un formulario correspondiente para el vendedor.
+- (MEDIA) Cambiar colores para los botones.
+- (MEDIA) Modificar las notificaciones.
