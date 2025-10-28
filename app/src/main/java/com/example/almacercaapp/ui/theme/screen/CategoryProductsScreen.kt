@@ -45,13 +45,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.delay
-
+import androidx.compose.foundation.clickable // <-- AÑADE ESTE IMPORT
 
 // (El composable ProductCard y AddedToCartNotification se quedan igual, están perfectos)
 @Composable
-fun ProductCard(product: Product, onAddClick: () -> Unit) {
+fun ProductCard(
+    product: Product,
+    onAddClick: () -> Unit,
+    onCardClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCardClick() }, // <-- ¡HACE LA TARJETA CLICKEABLE!
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface) // Color de fondo blanco
     ) {
@@ -120,7 +125,10 @@ fun ProductCard(product: Product, onAddClick: () -> Unit) {
     }
 }
 @Composable
-fun AddedToCartNotification(visible: Boolean, onDismissed: () -> Unit) {
+fun AddedToCartNotification(
+    visible: Boolean,
+    text: String,
+    onDismissed: () -> Unit) {
 
     // Este efecto se dispara solo cuando 'visible' cambia a 'true'
     LaunchedEffect(key1 = visible) {
@@ -159,7 +167,7 @@ fun AddedToCartNotification(visible: Boolean, onDismissed: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Añadido al carro",
+                    text = text,
                     color = Color.White, // Texto blanco
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
@@ -244,6 +252,9 @@ fun CategoryProductsScreen(
                             onAddClick = {
                                 cartViewModel.addProduct(product)
                                 showAddedToCartNotification = true
+                            },
+                            onCardClick = {
+                                parentNavController.navigate("product_detail/${product.id}")
                             }
                         )
                     }
@@ -273,9 +284,13 @@ fun CategoryProductsScreen(
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp)
                 .padding(horizontal = 16.dp)
         ) {
-            AddedToCartNotification(visible = showAddedToCartNotification) {
-                showAddedToCartNotification = false
-            }
+            AddedToCartNotification(
+                visible = showAddedToCartNotification,
+                text = "Añadido al carro",
+                onDismissed = {
+                    showAddedToCartNotification = false
+                }
+            )
         }
     }
 }

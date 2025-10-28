@@ -18,6 +18,7 @@ import com.example.almacercaapp.ui.theme.screen.SignUpScreen
 import com.example.almacercaapp.ui.theme.screen.SplashScreen
 import com.example.almacercaapp.ui.theme.screen.StoreDetailScreen
 import com.example.almacercaapp.ui.theme.screen.VerificationScreen
+import com.example.almacercaapp.ui.theme.screen.ProductDetailScreen
 
 //Gestiona el flujo de alto nivel
 @Composable
@@ -92,6 +93,21 @@ fun NavGraph(navController: NavHostController) {
                 parentNavController = navController
             )
         }
-        // ▲▲▲ FIN DE LA CORRECCIÓN ▲▲▲
+        composable(
+            route = "product_detail/{productId}",
+            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")
+            ProductDetailScreen(
+                productId = productId,
+                onBack = { navController.popBackStack() },
+                onGoToCart = {
+                    // Navega al carrito (como hicimos antes)
+                    navController.navigate("main_screen?start_destination=cart") {
+                        popUpTo(navController.graph.startDestinationId)
+                    }
+                }
+            )
+        }
     }
-}
+ }

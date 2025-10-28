@@ -72,6 +72,33 @@ object CartRepository {
         }
     }
 
+    fun addAllProducts(products: List<Product>) {
+        products.forEach { product ->
+            // Reutiliza la lógica de 'addProduct' que ya existe
+            addProduct(product)
+        }
+    }
+    fun addMultipleProducts(product: Product, quantityToAdd: Int) {
+        _uiState.update { currentState ->
+            val existingItem = currentState.items.find { it.product.id == product.id }
+
+            val newItems = if (existingItem != null) {
+                // Producto ya existe, incrementa la cantidad
+                currentState.items.map {
+                    if (it.product.id == product.id) {
+                        it.copy(quantity = it.quantity + quantityToAdd)
+                    } else {
+                        it
+                    }
+                }
+            } else {
+                // Producto nuevo, añádelo a la lista con la cantidad
+                currentState.items + CartItem(product = product, quantity = quantityToAdd)
+            }
+            currentState.copy(items = newItems)
+        }
+    }
+
     fun messageShown() {
         _uiState.update { it.copy(productAddedMessage = null) }
     }

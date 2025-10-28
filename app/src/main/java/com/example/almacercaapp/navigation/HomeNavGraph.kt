@@ -39,7 +39,7 @@ fun HomeNavGraph(
             CartScreen()
         }
         composable(route = "favorites") {
-            FavoritesScreen()
+            FavoritesScreen(parentNavController = parentNavController)
         }
         composable(route = "profile") {
             ProfileScreen()
