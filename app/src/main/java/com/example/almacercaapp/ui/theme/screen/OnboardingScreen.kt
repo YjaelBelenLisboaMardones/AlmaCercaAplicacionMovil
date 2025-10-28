@@ -20,6 +20,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.almacercaapp.R
 import androidx.compose.material3.MaterialTheme
+import com.example.almacercaapp.navigation.Routes
+import com.example.almacercaapp.ui.theme.GreenPrimary
+import androidx.compose.foundation.clickable
+
 
 
 @Composable
@@ -31,7 +35,7 @@ fun OnboardingScreen(navController: NavController) {
     ) {
         // Fondo
         Image(
-            painter = painterResource(id = R.drawable.onboarding_image), // imagen de fondo
+            painter = painterResource(id = R.drawable.onboarding), // imagen de fondo
             contentDescription = "Onboarding Background",
             contentScale = ContentScale.Crop, // rellena la pantalla sin deformarse
             modifier = Modifier.fillMaxSize()
@@ -66,7 +70,7 @@ fun OnboardingScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    navController.navigate("signin_method")
+                    navController.navigate(Routes.SignInMethod.route)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6FCF97)),
                 shape = RoundedCornerShape(16.dp),
@@ -81,6 +85,20 @@ fun OnboardingScreen(navController: NavController) {
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+
+                text = "Crea una cuenta nueva",
+                color = GreenPrimary, // Color verde
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.clickable {
+
+                    navController.navigate(Routes.RoleSelection.route)
+                }
+            )
         }
     }
 }

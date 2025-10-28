@@ -40,6 +40,7 @@ import com.example.almacercaapp.viewmodel.CartViewModel
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.navigation.NavHostController
 
 /**
  * Esta es la pantalla que muestra el contenido del carrito de compras.
@@ -48,7 +49,8 @@ import androidx.compose.foundation.layout.WindowInsets
 @Composable
 fun CartScreen(
     modifier: Modifier = Modifier,
-    cartViewModel: CartViewModel = viewModel() // Recibe el ViewModel compartido
+    cartViewModel: CartViewModel = viewModel() ,// Recibe el ViewModel compartido
+    parentNavController: NavHostController //
 ) {
     val uiState by cartViewModel.uiState.collectAsState()
     Scaffold(
@@ -86,7 +88,8 @@ fun CartScreen(
                         )
                     }
                     Button(
-                        onClick = { /* TODO: Lógica para ir a pagar */ },
+                        onClick = {
+                            parentNavController.navigate("checkout")                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)

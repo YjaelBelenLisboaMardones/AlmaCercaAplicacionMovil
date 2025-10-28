@@ -15,14 +15,15 @@ import com.example.almacercaapp.R
 import com.example.almacercaapp.ui.theme.AlmaCercaAppTheme
 import androidx.compose.material3.MaterialTheme
 import com.example.almacercaapp.ui.theme.GreenPrimary
+import com.example.almacercaapp.navigation.Routes
 
 
 @Composable
 fun SplashScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         delay(2000) // Espera 2 segundos antes de navegar
-        navController.navigate("onboarding") {
-            popUpTo("splash") { inclusive = true }
+        navController.navigate(Routes.Onboarding.route) {
+            popUpTo(Routes.Splash.route) { inclusive = true }
         }
     }
 
