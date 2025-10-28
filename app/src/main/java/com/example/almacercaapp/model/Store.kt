@@ -5,7 +5,7 @@ import androidx.annotation.DrawableRes
 data class Store(
     val id: Int,
     val name: String,
-    val category: String,
+    val storeCategoryId: Int,
     val address: String,
     val distance: String,
     // Esta propiedad guardará el ID del recurso de imagen (ej. R.drawable.logo_sandra)

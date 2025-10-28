@@ -137,19 +137,39 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() { // <
     // --- Lógica de REGISTRO (MODIFICADA) ---
     fun submitSignUp() { // Renombrado
         if (validateSignUpFields()) { // Llama a la validación de campos
-            viewModelScope.launch {
-                // Opcional: Mostrar estado de carga
-                // _uiState.update { it.copy(isSubmitting = true, errorMsg = null) }
+                viewModelScope.launch {
+                    // Opcional: Mostrar estado de carga
+                    // _uiState.update { it.copy(isSubmitting = true, errorMsg = null) }
 
-                // Llama al repositorio para intentar registrar
-                val result = repository.register(
-                    name = user.value.username.trim(),
-                    // Asegúrate de pasar el valor correcto según useEmail
-                    email = if (user.value.useEmail) user.value.email.trim() else "",
-                    phone = if (!user.value.useEmail) user.value.phoneNumber.trim() else "",
-                    password = user.value.password, // No usar trim()
-                    role = selectedRole.value
-                )
+                    // --- INICIO DE LA CORRECIÓN ---
+
+                    // Determina el email a enviar.
+                    val emailToRegister = if (user.value.useEmail) {
+                        // Si el usuario está en modo "Usar correo", usa el email.
+                        user.value.email.trim()
+                    } else {
+                        // Si está en modo "Usar teléfono", crea un email falso y ÚNICO
+                        // para evitar el bug del email vacío ("").
+                        "${user.value.phoneNumber.trim()}@phone.local"
+                    }
+
+                    // Determina el teléfono a enviar.
+                    val phoneToRegister = if (!user.value.useEmail) {
+                        // Si está en modo "Usar teléfono", usa el teléfono.
+                        user.value.phoneNumber.trim()
+                    } else {
+                        // Si está en modo "Usar correo", envía un teléfono vacío.
+                        ""
+                    }
+
+                    // Llama al repositorio con los datos corregidos
+                    val result = repository.register(
+                        name = user.value.username.trim(),
+                        email = emailToRegister, // <-- CORREGIDO
+                        phone = phoneToRegister, // <-- CORREGIDO
+                        password = user.value.password,
+                        role = selectedRole.value
+                    )
 
                 if (result.isSuccess) {
                     _registerSuccess.value = true // Indica éxito a la UI

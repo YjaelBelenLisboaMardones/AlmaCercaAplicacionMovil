@@ -12,6 +12,7 @@ import com.example.almacercaapp.ui.theme.screen.CartScreen
 import com.example.almacercaapp.ui.theme.screen.ExploreScreen
 import com.example.almacercaapp.ui.theme.screen.FavoritesScreen
 import com.example.almacercaapp.ui.theme.screen.HomeScreen
+import com.example.almacercaapp.navigation.Routes
 import com.example.almacercaapp.ui.theme.screen.ProfileScreen
 import com.example.almacercaapp.ui.theme.screen.FaqScreen
 import com.example.almacercaapp.ui.theme.screen.HelpCenterScreen
@@ -19,18 +20,22 @@ import com.example.almacercaapp.ui.theme.screen.NotificationsScreen
 import com.example.almacercaapp.ui.theme.screen.PersonalDataScreen
 import com.example.almacercaapp.ui.theme.screen.SupportChatScreen // Asegúrate que el nombre de tu archivo de chat sea SupportScreen.kt
 
-@RequiresApi(Build.VERSION_CODES.O)
+//Gestiona la navegacion interna entre las 5 pestañas del navigationbar
+@RequiresApi(Build.VERSION_CODES.O) // <-- ANOTACIÓN ADJUNTADA A LA FUNCIÓN
 @Composable
 fun HomeNavGraph(
-    navController: NavHostController, // Este es el controlador para las pestañas (Home, Explore, etc.)
-    parentNavController: NavHostController, // Este es el controlador principal (para login/logout)
-    modifier: Modifier = Modifier
+    navController: NavHostController,
+    parentNavController: NavHostController,
+    modifier: Modifier = Modifier,
+    startDestination: String
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home",
-        modifier = modifier
+        modifier = modifier,
+        startDestination = startDestination// Ckya que recibe la funcion como parametro hacemos que sea flexible el homenavgraph
+        //dejandonos que pueda moverse dependiendo del caso
     ) {
+
         composable(route = "home") {
             HomeScreen(parentNavController = parentNavController)
         }
@@ -38,11 +43,10 @@ fun HomeNavGraph(
             ExploreScreen()
         }
         composable(route = "cart") {
-            CartScreen()
+            CartScreen(parentNavController = parentNavController)
         }
         composable(route = "favorites") {
-            FavoritesScreen()
-        }
+            FavoritesScreen(parentNavController = parentNavController)        }
 
         // --- ESTA ES LA CORRECCIÓN ---
         // ProfileScreen necesita AMBOS controladores
@@ -74,3 +78,8 @@ fun HomeNavGraph(
         }
     }
 }
+
+
+
+
+

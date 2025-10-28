@@ -24,7 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.runtime.collectAsState
 import com.example.almacercaapp.data.local.user.UserRole
-
+import com.example.almacercaapp.navigation.Routes
 
 @Composable
 fun SignInScreen(
@@ -164,8 +164,7 @@ fun SignInScreen(
                 Text(
                     text = "Regístrate",
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { navController.navigate("signup") }
-                )
+                    modifier = Modifier.clickable { navController.navigate(Routes.RoleSelection.route) }                )
             }
         }
     }
