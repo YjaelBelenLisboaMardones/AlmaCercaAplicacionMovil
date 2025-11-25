@@ -103,5 +103,8 @@ dependencies {
     // Accompanist Permissions (Para la gestión simplificada de ACCESS_FINE_LOCATION)
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
 
 }
