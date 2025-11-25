@@ -28,3 +28,10 @@ Requisitos
 -Ejecución y Verificación
 Limpiar Proyecto: Vaya a Build > Clean Project. Sincronizar y Ejecutar
 Verificar Persistencia: Use el Database Inspector de Android Studio para confirmar que las tablas users y guardan los datos correctamente.
+
+## Futuras Implementaciones
+-(URGENTE) Realizar la conexión de los productos guardados a la base de datos.
+-(URGENTE) Conectar formulario de datos personales con UserEntity para que los cambios se guarden en la base de datos.
+-(POR HACER) Realizar un formulario aparte para el vendedor.
+-(POR HACER) Cambiar colores para los botones.
+-(POR HACER) Modificar las notificaciones.
