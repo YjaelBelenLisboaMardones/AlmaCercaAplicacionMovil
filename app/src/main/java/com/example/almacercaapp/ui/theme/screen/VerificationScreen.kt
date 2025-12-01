@@ -87,7 +87,7 @@ fun VerificationScreen(
                         val destination = when (userRole) {
                             UserRole.BUYER -> "main_screen"
                             UserRole.SELLER -> "seller_main_screen"
-                            // else -> Routes.RoleSelection.route
+                            UserRole.ADMIN -> "admin_dashboard_screen" // <-- CASO AÑADIDO
                         }
 
                         navController.navigate(destination) {

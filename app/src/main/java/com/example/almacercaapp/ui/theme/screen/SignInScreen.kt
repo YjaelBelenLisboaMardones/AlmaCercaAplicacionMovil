@@ -42,6 +42,7 @@ fun SignInScreen(
             val destination = when (userRole) {
                 UserRole.BUYER -> "main_screen"
                 UserRole.SELLER -> "seller_main_screen"
+                UserRole.ADMIN -> "admin_dashboard_screen" // <-- CASO AÑADIDO
                 null -> "signin_method" // Ruta de fallback si algo raro pasa
             }
             navController.navigate(destination) {

@@ -8,7 +8,6 @@ import androidx.room.PrimaryKey
 //Representará la tabla de usuarios en la base de datos.
 // Cada instancia de UserEntity representa una fila en esta tabla. Las instancias son las que se insertan en la base de datos.
 
-enum class UserRole {BUYER, SELLER}
 @Entity(tableName = "users") //Acá le dice que haga una tabla
 data class UserEntity(
     @PrimaryKey(autoGenerate = true)    // Clave primaria autoincremental

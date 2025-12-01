@@ -1,30 +1,44 @@
 package com.example.almacercaapp.network
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitClient {
+// AHORA ES UNA CLASE que recibe DataStore para poder crear el AuthInterceptor
+class RetrofitClient(dataStore: DataStore<Preferences>) {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private val baseUrl = "http://10.0.2.2:8080/"
 
-    // 1. Crear el interceptor de logging
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY // Nivel BODY para ver todo
-    }
+    // El ApiService ahora se crea dentro de la clase
+    val instance: ApiService
 
-    // 2. Crear el cliente OkHttp y añadir el interceptor
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .build()
+    init {
+        // 1. Interceptor para ver los logs de la red (ya lo teníamos)
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
 
-    val instance: ApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client) // 3. Añadir el cliente a Retrofit
+        // 2. NUEVO: Creamos el interceptor de autenticación, pasándole el DataStore
+        val authInterceptor = AuthInterceptor(dataStore)
+
+        // 3. Creamos el cliente OkHttp y AÑADIMOS AMBOS INTERCEPTORES.
+        // El de autenticación DEBE ir antes que el de logging.
+        val client = OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor)
+            .build()
+
+        // 4. Creamos la instancia de Retrofit usando el nuevo cliente
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiService::class.java)
+
+        // 5. Finalmente, creamos la instancia del ApiService
+        instance = retrofit.create(ApiService::class.java)
     }
 }
