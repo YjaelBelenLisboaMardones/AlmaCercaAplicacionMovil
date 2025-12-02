@@ -66,9 +66,7 @@ fun NavGraph(
         composable(Routes.SignIn.route) { SignInScreen(navController, authViewModel) }
         composable(Routes.SignInMethod.route) { SignInMethodScreen(navController) }
 
-        // --- RUTAS PRINCIPALES ---
-        composable(Routes.SellerMain.route) { SellerMainScreen(parentNavController = navController) }
-
+        // --- RUTAS PRINCIPALES --
         composable(
             route = "main_screen?start_destination={start_destination}",
             arguments = listOf(navArgument("start_destination") {
