@@ -39,4 +39,35 @@ class ProductRepository(private val apiService: ApiService) {
             Result.failure(e)
         }
     }
+
+    suspend fun updateProduct(product: ProductDto): Result<ProductDto> {
+        return try {
+            // Asume que el ID de ProductDto no está vacío para una actualización
+            if (product.id.isBlank()) {
+                return Result.failure(IllegalArgumentException("El ID del producto es necesario para actualizar."))
+            }
+
+            val response = apiService.updateProduct(product.id, product)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al actualizar el producto."))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteProduct(productId: String): Result<Unit> {
+        return try {
+            val response = apiService.deleteProduct(productId)
+            if (response.isSuccessful) {
+                Result.success(Unit) // Éxito si el código de respuesta es 2xx
+            } else {
+                Result.failure(Exception("Error al eliminar el producto."))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

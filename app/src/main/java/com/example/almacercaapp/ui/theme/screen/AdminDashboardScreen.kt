@@ -70,6 +70,13 @@ private fun AdminScaffoldContent(viewModel: AdminViewModel, currentScreen: Strin
     val snackbarHostState = remember { SnackbarHostState() }
     var showBottomSheet by remember { mutableStateOf(false) }
     val creationStatus by viewModel.creationStatus.collectAsState()
+    val productToEdit by viewModel.productToEdit
+
+    LaunchedEffect(productToEdit) {
+        if (productToEdit != null) {
+            showBottomSheet = true
+        }
+    }
 
     LaunchedEffect(creationStatus) {
         creationStatus?.let {
@@ -83,7 +90,10 @@ private fun AdminScaffoldContent(viewModel: AdminViewModel, currentScreen: Strin
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(currentScreen) }, navigationIcon = { IconButton(onClick = onMenuClick) { Icon(Icons.Default.Menu, "Abrir menú") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) },
-        floatingActionButton = { if (currentScreen == "Gestión Productos") { FloatingActionButton(onClick = { showBottomSheet = true }) { Icon(Icons.Default.Add, "Añadir Producto") } } },
+        floatingActionButton = { if (currentScreen == "Gestión Productos") { FloatingActionButton(onClick = {
+            viewModel.finishEditing()
+            showBottomSheet = true
+        }) { Icon(Icons.Default.Add, "Añadir Producto") } } },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -92,7 +102,19 @@ private fun AdminScaffoldContent(viewModel: AdminViewModel, currentScreen: Strin
                 "Gestión Productos" -> ProductManagementScreen(viewModel = viewModel)
             }
             if (showBottomSheet) {
-                ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) { CreateProductForm(viewModel = viewModel) }
+                ModalBottomSheet(onDismissRequest = {
+                    showBottomSheet = false
+                    viewModel.finishEditing() // Limpia el estado si el usuario descarta
+                }, sheetState = sheetState) {
+                    CreateProductForm(
+                        viewModel = viewModel,
+                        isEditing = productToEdit != null, // Pasa true si hay producto en edición
+                        onDismiss = {
+                            showBottomSheet = false
+                            viewModel.finishEditing()
+                        }
+                    )
+                }
             }
         }
     }
@@ -124,9 +146,15 @@ fun ProductManagementScreen(viewModel: AdminViewModel) {
     } else if (products.isEmpty()) {
         ComingSoonScreen("No hay productos", "Crea el primero usando el botón '+'")
     } else {
-        ProductList(products = products, onDelete = { product ->
-            // viewModel.deleteProduct(product.id)
-        })
+        ProductList(
+            products = products,
+            onEdit = { product ->
+                viewModel.startEditing(product) // Inicia el proceso de edición
+            },
+            onDelete = { product ->
+                viewModel.deleteProduct(product) // Llama a la función de eliminación
+            }
+        )
     }
 }
 
@@ -164,16 +192,24 @@ fun ComingSoonScreen(title: String, subtitle: String) {
 }
 
 @Composable
-fun ProductList(products: List<ProductDto>, onDelete: (ProductDto) -> Unit) {
+fun ProductList(
+    products: List<ProductDto>,
+    onEdit: (ProductDto) -> Unit,
+    onDelete: (ProductDto) -> Unit
+) {
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         items(products) { product ->
-            ProductRow(product = product, onDelete = { onDelete(product) })
+            ProductRow(
+                product = product,
+                onEdit = { onEdit(product) },
+                onDelete = { onDelete(product) }
+            )
         }
     }
 }
 
 @Composable
-fun ProductRow(product: ProductDto, onDelete: () -> Unit) {
+fun ProductRow(product: ProductDto, onEdit: () -> Unit, onDelete: () -> Unit) {
     Card(elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
         Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             AsyncImage(
@@ -186,6 +222,11 @@ fun ProductRow(product: ProductDto, onDelete: () -> Unit) {
                 Text(product.name, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text(String.format("$%.2f", product.price), color = MaterialTheme.colorScheme.primary)
             }
+            // Botón de edición
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.secondary)
+            }
+            // Botón de eliminación
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.error)
             }
@@ -194,7 +235,7 @@ fun ProductRow(product: ProductDto, onDelete: () -> Unit) {
 }
 
 @Composable
-fun CreateProductForm(viewModel: AdminViewModel) {
+fun CreateProductForm(viewModel: AdminViewModel, isEditing: Boolean, onDismiss: () -> Unit) {
     val name by viewModel.productName
     val description by viewModel.productDescription
     val price by viewModel.productPrice
@@ -202,8 +243,11 @@ fun CreateProductForm(viewModel: AdminViewModel) {
     val imageUrl by viewModel.productImageUrl
     val creationStatus by viewModel.creationStatus.collectAsState()
 
+    val title = if (isEditing) "Editar Producto" else "Nuevo Producto"
+    val buttonText = if (isEditing) "Guardar Cambios" else "Crear Producto"
+
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Nuevo Producto", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(title, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(24.dp))
         OutlinedTextField(value = name, onValueChange = { viewModel.productName.value = it }, label = { Text("Nombre del producto") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
@@ -216,14 +260,25 @@ fun CreateProductForm(viewModel: AdminViewModel) {
         OutlinedTextField(value = imageUrl, onValueChange = { viewModel.productImageUrl.value = it }, label = { Text("URL de la imagen") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(24.dp))
         creationStatus?.let {
+            // Muestra indicador de carga solo si el estado es de "Creando" o "Actualizando"
             if (it.startsWith("Error")) {
                 Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(bottom = 8.dp))
-            } else if (it.contains("Creando")) {
+            } else if (it.contains("Creando") || it.contains("Actualizando")) {
                 CircularProgressIndicator(modifier = Modifier.padding(bottom = 8.dp))
             }
         }
-        Button(onClick = { viewModel.createProduct() }, modifier = Modifier.fillMaxWidth().height(50.dp), enabled = creationStatus?.contains("Creando") != true) {
-            Text("Crear Producto")
+        Button(
+            onClick = {
+                if (isEditing) {
+                    viewModel.updateProduct() // Llama a la lógica de actualización
+                } else {
+                    viewModel.createProduct() // Llama a la lógica de creación
+                }
+            },
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            enabled = creationStatus?.contains("Creando") != true && creationStatus?.contains("Actualizando") != true
+        ) {
+            Text(buttonText)
         }
         Spacer(modifier = Modifier.height(24.dp))
     }

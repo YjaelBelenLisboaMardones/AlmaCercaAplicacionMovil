@@ -8,6 +8,7 @@ import com.example.almacercaapp.model.ProductDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
 
 class AdminViewModel(private val productRepository: ProductRepository) : ViewModel() {
 
@@ -17,6 +18,7 @@ class AdminViewModel(private val productRepository: ProductRepository) : ViewMod
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
+    val productToEdit = mutableStateOf<ProductDto?>(null)
 
     // --- ESTADO DEL FORMULARIO DE CREACIÓN ---
     val productName = mutableStateOf("")
@@ -33,6 +35,23 @@ class AdminViewModel(private val productRepository: ProductRepository) : ViewMod
         loadProducts()
     }
 
+    fun startEditing(product: ProductDto) {
+        productToEdit.value = product
+        productName.value = product.name
+        productDescription.value = product.description
+        productPrice.value = product.price.toString()
+        productStock.value = product.stock.toString()
+        productImageUrl.value = product.imageUrl
+    }
+
+    fun finishEditing() {
+        productToEdit.value = null
+        productName.value = ""
+        productDescription.value = ""
+        productPrice.value = ""
+        productStock.value = ""
+        productImageUrl.value = ""
+    }
     /**
      * Carga la lista de productos desde el repositorio.
      */
@@ -85,6 +104,52 @@ class AdminViewModel(private val productRepository: ProductRepository) : ViewMod
         }
     }
 
+    fun updateProduct() {
+        val productToUpdate = productToEdit.value ?: return
+        if (productName.value.isBlank() || productPrice.value.isBlank()) {
+            _creationStatus.value = "Error: El nombre y el precio son obligatorios."
+            return
+        }
+
+        viewModelScope.launch {
+            _creationStatus.value = "Actualizando producto..."
+
+            val updatedProduct = productToUpdate.copy(
+                name = productName.value,
+                description = productDescription.value,
+                price = productPrice.value.toDoubleOrNull() ?: 0.0,
+                stock = productStock.value.toIntOrNull() ?: 0,
+                imageUrl = productImageUrl.value
+            )
+
+            val result = productRepository.updateProduct(updatedProduct)
+
+            if (result.isSuccess) {
+                _creationStatus.value = "¡Producto actualizado con éxito!"
+                loadProducts() // Recarga la lista
+                finishEditing() // Limpia el estado de edición y los campos
+            } else {
+                _creationStatus.value = result.exceptionOrNull()?.message ?: "Error desconocido al actualizar"
+            }
+        }
+    }
+
+    fun deleteProduct(product: ProductDto) {
+        viewModelScope.launch {
+            _creationStatus.value = "Eliminando ${product.name}..."
+            val result = productRepository.deleteProduct(product.id)
+
+            if (result.isSuccess) {
+                _creationStatus.value = "Producto eliminado con éxito."
+                // Actualiza el flujo de productos sin recargar (optimización)
+                _products.update { currentList ->
+                    currentList.filter { it.id != product.id }
+                }
+            } else {
+                _creationStatus.value = result.exceptionOrNull()?.message ?: "Error desconocido al eliminar"
+            }
+        }
+    }
     /**
      * Limpia el mensaje de estado para que no se muestre indefinidamente.
      */

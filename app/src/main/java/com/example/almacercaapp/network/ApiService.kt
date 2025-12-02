@@ -7,8 +7,7 @@ import com.example.almacercaapp.model.ProductDto
 import com.example.almacercaapp.model.RegisterRequest
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface ApiService {
 
@@ -34,4 +33,15 @@ interface ApiService {
     // --- RUTAS PROTEGIDAS (ADMIN) ---
     @POST("api/admin/products")
     suspend fun createProduct(@Body product: ProductDto): Response<ProductDto>
+
+    @PUT("api/admin/products/{id}")
+    suspend fun updateProduct(
+        @Path("id") id: String,
+        @Body product: ProductDto
+    ): Response<ProductDto>
+
+    @DELETE("api/admin/products/{id}")
+    suspend fun deleteProduct(
+        @Path("id") id: String
+    ): Response<Unit> // Response<Unit> para éxito sin cuerpo
 }
