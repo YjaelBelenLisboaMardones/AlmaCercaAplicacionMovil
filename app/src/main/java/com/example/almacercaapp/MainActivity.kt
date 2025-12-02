@@ -18,11 +18,14 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.example.almacercaapp.data.repository.ProductRepository
 import com.example.almacercaapp.data.repository.UserRepository
 import com.example.almacercaapp.navigation.NavGraph
 import com.example.almacercaapp.network.ApiService
 import com.example.almacercaapp.network.RetrofitClient
 import com.example.almacercaapp.ui.theme.AlmaCercaAppTheme
+import com.example.almacercaapp.viewmodel.AdminViewModel
+import com.example.almacercaapp.viewmodel.AdminViewModelFactory
 import com.example.almacercaapp.viewmodel.AuthViewModel
 import com.example.almacercaapp.viewmodel.AuthViewModelFactory
 
@@ -43,25 +46,22 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppRoot() {
-    // --- CREACIÓN DE DEPENDENCIAS (LA ARQUITECTURA FINAL Y CORRECTA) ---
+    // --- RAÍZ DE DEPENDENCIAS (MANUAL) ---
     val context = LocalContext.current.applicationContext
-
-    // 1. Obtener la instancia de DataStore (nuestra fuente de sesión local)
     val dataStore = context.dataStore
-
-    // 2. Crear una instancia del cliente Retrofit, pasándole el DataStore
-    //    para que pueda construir el AuthInterceptor.
     val retrofitClient = RetrofitClient(dataStore)
-
-    // 3. Obtener la instancia de ApiService desde nuestro cliente Retrofit ya configurado.
     val apiService: ApiService = retrofitClient.instance
 
-    // 4. Crear el UserRepository con las dependencias de Red y Sesión.
+    // --- CREACIÓN DE REPOSITORIOS ---
     val userRepository = UserRepository(apiService, dataStore)
+    val productRepository = ProductRepository(apiService)
 
-    // 5. Crear el AuthViewModel usando la Factory (esto no cambia).
+    // --- CREACIÓN DE VIEWMODELS ---
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(userRepository)
+    )
+    val adminViewModel: AdminViewModel = viewModel(
+        factory = AdminViewModelFactory(productRepository)
     )
 
     AlmaCercaAppTheme {
@@ -70,10 +70,11 @@ fun AppRoot() {
             color = MaterialTheme.colorScheme.background
         ) {
             val navController = rememberNavController()
-            // Le pasamos el ViewModel ya creado y listo para usar.
+            // Le pasamos TODOS los ViewModels al NavGraph para que los distribuya
             NavGraph(
                 navController = navController,
-                authViewModel = authViewModel
+                authViewModel = authViewModel,
+                adminViewModel = adminViewModel
             )
         }
     }

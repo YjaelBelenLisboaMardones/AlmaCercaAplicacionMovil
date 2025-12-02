@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.almacercaapp.data.repository.UserRepository
 import com.example.almacercaapp.domain.validation.*
 import com.example.almacercaapp.model.User
-import com.example.almacercaapp.data.local.user.UserRole
+import com.example.almacercaapp.model.UserRole // <-- IMPORTACIÓN CORREGIDA
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,10 +43,11 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() {
         viewModelScope.launch {
             repository.userRoleFlow.collect { roleString ->
                 // Convierte el String del DataStore al Enum UserRole
-                loggedInUserRole.value = when {
-                    roleString.equals("ADMIN", ignoreCase = true) -> UserRole.ADMIN
-                    roleString.equals("BUYER", ignoreCase = true) -> UserRole.BUYER
-                    else -> null // Si no hay rol guardado o se cierra sesión, es null
+                loggedInUserRole.value = when (roleString?.uppercase()) { // Usamos uppercase para ser robustos
+                    "ADMIN" -> UserRole.ADMIN
+                    "BUYER" -> UserRole.BUYER
+                    // El caso SELLER ha sido eliminado
+                    else -> null // Si no hay rol guardado o es un valor inesperado, es null
                 }
             }
         }
@@ -89,7 +90,6 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() {
                     _loginSuccess.value = true
                     passwordError.value = null
                     emailError.value = null
-                    // El rol se actualizará automáticamente gracias al Flow que observamos en init{}
                 } else {
                     passwordError.value = result.exceptionOrNull()?.message ?: "Error al iniciar sesión"
                 }
@@ -113,7 +113,6 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() {
 
                 if (result.isSuccess) {
                     _registerSuccess.value = true
-                    // CORREGIDO: Quitado el operador :: para acceder al objeto MutableState directamente
                     listOf(nameError, emailError, phoneError, passwordError).forEach { it.value = null }
                 } else {
                     val errorMessage = result.exceptionOrNull()?.message ?: "Error en el registro"
@@ -144,7 +143,7 @@ class AuthViewModel(private val repository: UserRepository) : ViewModel() {
         emailError.value = if (user.value.useEmail) validateEmail(user.value.email) else null
         phoneError.value = if (!user.value.useEmail) validatePhoneDigitsOnly(user.value.phoneNumber) else null
         passwordError.value = validateStrongPass(user.value.password)
-        return listOf(nameError, emailError, phoneError, passwordError).all { it.value == null }
+        return listOf(nameError.value, emailError.value, phoneError.value, passwordError.value).all { it == null }
     }
     
     fun validateVerification(): Boolean {

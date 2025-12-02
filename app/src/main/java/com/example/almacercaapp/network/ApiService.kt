@@ -22,12 +22,16 @@ interface ApiService {
     @GET("api/products")
     suspend fun listarProductos(): Response<List<ProductDto>>
 
-    // --- RUTAS PROTEGIDAS ---
+    // --- RUTAS PROTEGIDAS (CLIENTE) ---
     @GET("api/cart")
-    suspend fun obtenerCarrito(): Response<List<CartItemDto>> // El token identificará al usuario
+    suspend fun obtenerCarrito(): Response<List<CartItemDto>>
 
     @POST("api/cart/add")
     suspend fun agregarProducto(
         @Body item: CartItemDto
-    ): Response<Void> // El token identificará al usuario
+    ): Response<Void>
+
+    // --- RUTAS PROTEGIDAS (ADMIN) ---
+    @POST("api/admin/products")
+    suspend fun createProduct(@Body product: ProductDto): Response<ProductDto>
 }

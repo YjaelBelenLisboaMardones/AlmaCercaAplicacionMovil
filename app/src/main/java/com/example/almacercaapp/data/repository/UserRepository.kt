@@ -4,10 +4,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.example.almacercaapp.data.local.user.UserRole
 import com.example.almacercaapp.model.LoginRequest
 import com.example.almacercaapp.model.RegisterRequest
 import com.example.almacercaapp.network.ApiService
+import com.example.almacercaapp.model.UserRole
 import kotlinx.coroutines.flow.map
 
 class UserRepository(
