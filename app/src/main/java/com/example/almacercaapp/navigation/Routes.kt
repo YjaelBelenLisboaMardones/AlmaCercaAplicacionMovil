@@ -1,6 +1,5 @@
 package com.example.almacercaapp.navigation
-import com.example.almacercaapp.data.local.user.UserRole
-
+import com.example.almacercaapp.model.UserRole
 //archivo que se asegura que las rutas esten bien escritas
 sealed class Routes(val route: String) {
     object Splash : Routes("splash")

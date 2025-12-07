@@ -25,7 +25,7 @@ import androidx.compose.foundation.background
 import com.example.almacercaapp.navigation.Routes
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import com.example.almacercaapp.data.local.user.UserRole
+import com.example.almacercaapp.model.UserRole
 
 
 @Composable

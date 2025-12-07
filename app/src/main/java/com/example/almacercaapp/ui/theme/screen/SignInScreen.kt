@@ -23,7 +23,7 @@ import com.example.almacercaapp.ui.theme.component.PrimaryButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.runtime.collectAsState
-import com.example.almacercaapp.data.local.user.UserRole
+import com.example.almacercaapp.model.UserRole // <-- IMPORTACIÓN CORREGIDA
 import com.example.almacercaapp.navigation.Routes
 
 @Composable
@@ -41,8 +41,8 @@ fun SignInScreen(
             val userRole = viewModel.loggedInUserRole.value
             val destination = when (userRole) {
                 UserRole.BUYER -> "main_screen"
-                UserRole.SELLER -> "seller_main_screen"
-                null -> "signin_method" // Ruta de fallback si algo raro pasa
+                UserRole.ADMIN -> "admin_dashboard_screen"
+                null -> "signin_method" // Ruta de fallback
             }
             navController.navigate(destination) {
                 popUpTo(0) { inclusive = true }

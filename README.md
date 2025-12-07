@@ -20,18 +20,21 @@ El área del vendedor implementa la lógica de gestión de inventario:
 CRUD de Productos: Funcionalidad para Agregar, Editar y Eliminar productos a través de AddEditProductScreen.
 
 Soporte: Pantallas de FAQ, Centro de Ayuda y Soporte/Chat disponibles en el menú lateral.
-## 3. Pasos para la Ejecución
-Requisitos
--Android Studio (Versión reciente).
--SDK Mínimo: API 24 (Android 7.0).
+3. Arquitectura y Pruebas del Sistema📋 Requisitos de EjecuciónIDE: Android Studio (Ladybug o versión reciente).
+Versión Android: Mínimo API 24 (Android 7.0).Conectividad: Acceso a Internet (Requerido para conectar con Railway).
 
--Ejecución y Verificación
-Limpiar Proyecto: Vaya a Build > Clean Project. Sincronizar y Ejecutar
-Verificar Persistencia: Use el Database Inspector de Android Studio para confirmar que las tablas users y guardan los datos correctamente.
-
-## Futuras Implementaciones
--(URGENTE) Realizar la conexión de los productos guardados a la base de datos.
--(URGENTE) Conectar formulario de datos personales con UserEntity para que los cambios se guarden en la base de datos.
--(POR HACER) Realizar un formulario aparte para el vendedor.
--(POR HACER) Cambiar colores para los botones.
--(POR HACER) Modificar las notificaciones.
+4. 🔗 Endpoints de la API (Backend)
+La aplicación se conecta a un servidor desplegado en Railway. 
+5. A continuación se detallan las rutas disponibles y los permisos necesarios para consumirlas.
+Método HTTP   Ruta (Endpoint)  Rol RequeridoDescripción
+POST/api/auth/register    PúblicoRegistra un nuevo usuario (comprador).
+POST/api/auth/loginPúblicoInicia sesión y devuelve un objeto Usuario (con ID y Rol).
+GET/api/admin/productsADMINLista todos los productos del sistema.
+POST/api/admin/productsADMINAgrega un nuevo producto al catálogo.
+PUT/api/admin/products/{id}ADMINModifica un producto existente por su ID.
+DELETE/api/admin/products/{id}ADMINElimina un producto del catálogo.
+GET/api/cartBUYERObtiene la lista de ítems del carrito del usuario actual.
+POST/api/cartBUYERAgrega un ítem (producto + cantidad) al carrito.
+DELETE/api/cart/items/{productId}BUYERElimina un ítem específico del carrito.
+🔐 Nota de Seguridad: Para las rutas protegidas (ADMIN y BUYER), 
+es obligatorio enviar el Header: userId: [ID_DEL_USUARIO].

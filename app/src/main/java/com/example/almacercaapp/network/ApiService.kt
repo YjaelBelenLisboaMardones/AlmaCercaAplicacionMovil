@@ -1,35 +1,47 @@
 package com.example.almacercaapp.network
 
-import com.example.almacercaapp.model.CartItemDto // Asegúrate de haber creado este (ver nota abajo)
+import com.example.almacercaapp.model.CartItemDto
 import com.example.almacercaapp.model.LoginRequest
 import com.example.almacercaapp.model.LoginResponse
+import com.example.almacercaapp.model.ProductDto
+import com.example.almacercaapp.model.RegisterRequest
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface ApiService {
 
     // --- RUTAS PÚBLICAS ---
-    // Aquí ya usamos tus modelos reales
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
-    // --- RUTAS PROTEGIDAS ---
+    @POST("api/auth/register")
+    suspend fun register(@Body request: RegisterRequest): Response<LoginResponse>
 
-    // ⚠️ CAMBIO CRÍTICO:
-    // Tu backend devuelve "[]" (una lista), NO un objeto "{...}".
-    // Por eso usamos List<CartItemDto> en lugar de CarritoDto.
+    @GET("api/products")
+    suspend fun listarProductos(): Response<List<ProductDto>>
+
+    // --- RUTAS PROTEGIDAS (CLIENTE) ---
     @GET("api/cart")
-    suspend fun obtenerCarrito(
-        @Header("userId") userId: String
-    ): Response<List<CartItemDto>>
+    suspend fun obtenerCarrito(): Response<List<CartItemDto>>
 
-    // Para agregar al carrito
     @POST("api/cart/add")
     suspend fun agregarProducto(
-        @Header("userId") userId: String,
         @Body item: CartItemDto
     ): Response<Void>
+
+    // --- RUTAS PROTEGIDAS (ADMIN) ---
+    @POST("api/admin/products")
+    suspend fun createProduct(@Body product: ProductDto): Response<ProductDto>
+
+    @PUT("api/admin/products/{id}")
+    suspend fun updateProduct(
+        @Path("id") id: String,
+        @Body product: ProductDto
+    ): Response<ProductDto>
+
+    @DELETE("api/admin/products/{id}")
+    suspend fun deleteProduct(
+        @Path("id") id: String
+    ): Response<Unit> // Response<Unit> para éxito sin cuerpo
 }

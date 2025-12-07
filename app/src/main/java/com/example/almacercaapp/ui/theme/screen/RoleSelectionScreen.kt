@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.almacercaapp.data.local.user.UserRole
+import com.example.almacercaapp.model.UserRole
 import com.example.almacercaapp.navigation.Routes
 import com.example.almacercaapp.ui.theme.GreenPrimary
 import com.example.almacercaapp.ui.theme.component.HeaderLogo
@@ -51,23 +51,6 @@ fun RoleSelectionScreen(navController: NavController) {
             shape = MaterialTheme.shapes.medium // Forma del botón
         ) {
             Text("Quiero Comprar", color = Color.White, fontSize = 18.sp)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp)) // Espacio entre botones
-
-        // --- Botón Vender ---
-        Button(
-            onClick = {
-                // Navega a SignUp pasando "SELLER" como argumento
-                navController.navigate(Routes.SignUp.createRoute(UserRole.SELLER))
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary), // Color verde
-            modifier = Modifier
-                .fillMaxWidth() // Ancho completo
-                .height(55.dp), // Altura fija
-            shape = MaterialTheme.shapes.medium // Forma del botón
-        ) {
-            Text("Quiero Vender", color = Color.White, fontSize = 18.sp)
         }
 
         Spacer(modifier = Modifier.height(40.dp)) // Espacio antes del texto de login

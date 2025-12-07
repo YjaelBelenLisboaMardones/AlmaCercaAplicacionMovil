@@ -13,93 +13,60 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.almacercaapp.data.local.user.UserRole
+import com.example.almacercaapp.model.UserRole
 import com.example.almacercaapp.ui.theme.screen.*
+import com.example.almacercaapp.viewmodel.AdminViewModel
 import com.example.almacercaapp.viewmodel.AuthViewModel
-import com.example.almacercaapp.model.CartRepository // Importa CartRepository
-// Gestiona el flujo de alto nivel
+import com.example.almacercaapp.model.CartRepository
+
 @RequiresApi(Build.VERSION_CODES.O)
-@Composable // <-- ¡LA ETIQUETA ESTÁ EN LA ÚNICA FUNCIÓN!
+@Composable
 fun NavGraph(
     navController: NavHostController,
-    authViewModel: AuthViewModel // (Viene de tu compañero)
+    authViewModel: AuthViewModel, 
+    adminViewModel: AdminViewModel
 ) {
 
-    val fadeAnimation = tween<Float>(400) // (Viene de tu código)
+    val fadeAnimation = tween<Float>(400)
 
-    // Ahora NavHost SÍ es llamado por una función @Composable
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash.route, // (Viene de tu compañero)
-        // (Tus animaciones)
+        startDestination = Routes.Splash.route,
         enterTransition = { fadeIn(animationSpec = fadeAnimation) },
         exitTransition = { fadeOut(animationSpec = fadeAnimation) },
         popEnterTransition = { fadeIn(animationSpec = fadeAnimation) },
         popExitTransition = { fadeOut(animationSpec = fadeAnimation) }
     ) {
 
-        // --- RUTAS DE TU COMPAÑERO (Login, Onboarding, etc.) ---
+        // --- RUTA DE ADMIN ---
+        composable("admin_dashboard_screen") {
+            AdminDashboardScreen(viewModel = adminViewModel) // <-- PARÁMETRO CORREGIDO
+        }
 
-        // Pantalla de carga inicial (Splash)
+        // --- RUTAS DE AUTENTICACIÓN ---
         composable(Routes.Splash.route) { SplashScreen(navController) }
-
-        // Pantalla de bienvenida e introducción (Onboarding)
         composable(Routes.Onboarding.route) { OnboardingScreen(navController) }
-
-        // Pantalla para seleccionar el rol (Comprador o Vendedor)
         composable(Routes.RoleSelection.route) { RoleSelectionScreen(navController) }
 
-        // Pantalla de registro de nuevo usuario (recibe un rol)
         composable(
             route = Routes.SignUp.route,
             arguments = listOf(navArgument("userRole") {
                 type = NavType.EnumType(UserRole::class.java)
             })
         ) { backStackEntry ->
-            val role =
-                backStackEntry.arguments?.getSerializable("userRole") as? UserRole ?: UserRole.BUYER
-            SignUpScreen(
-                navController = navController,
-                viewModel = authViewModel,
-                selectedRole = role
-            )
+            val role = backStackEntry.arguments?.getSerializable("userRole") as? UserRole ?: UserRole.BUYER
+            SignUpScreen(navController, authViewModel, role)
         }
 
-        // Pantalla de verificación de código (ej. email o SMS)
         composable(Routes.Verification.route) {
-            VerificationScreen(
-                navController = navController,
-                viewModel = authViewModel
-            )
+            VerificationScreen(navController, authViewModel)
         }
 
-        // Pantalla para configurar la ubicación
         composable(Routes.Location.route) { LocationScreen() }
+        composable(Routes.SignIn.route) { SignInScreen(navController, authViewModel) }
+        composable(Routes.SignInMethod.route) { SignInMethodScreen(navController) }
 
-        // Pantalla de inicio de sesión (Login)
-        composable(Routes.SignIn.route) {
-            SignInScreen(
-                navController = navController,
-                viewModel = authViewModel
-            )
-        }
-
-        // Pantalla para elegir otros métodos de inicio de sesión
-        composable(Routes.SignInMethod.route) {
-            SignInMethodScreen(navController = navController)
-        }
-
-        // Pantalla principal para el rol de Vendedor
-        composable(Routes.SellerMain.route) {
-            SellerMainScreen(parentNavController = navController)
-        }
-
-        // --- FIN DE LAS RUTAS DE TU COMPAÑERO ---
-
-
-        // --- TUS RUTAS (Y LAS DE ÉL) COMBINADAS ---
-
-        // (Tu ruta 'main_screen' con el argumento 'start_destination')
+        // --- RUTAS PRINCIPALES --
         composable(
             route = "main_screen?start_destination={start_destination}",
             arguments = listOf(navArgument("start_destination") {
@@ -109,23 +76,15 @@ fun NavGraph(
             })
         ) { backStackEntry ->
             val startDestination = backStackEntry.arguments?.getString("start_destination")
-            MainScreen(
-                parentNavController = navController,
-                startDestination = startDestination
-            )
+            MainScreen(parentNavController = navController, startDestination = startDestination)
         }
 
-        // (Ruta 'details' que ambos tenían)
+        // --- RUTAS DE DETALLE Y PRODUCTOS ---
         composable("details/{storeId}") { backStackEntry ->
             val storeId = backStackEntry.arguments?.getString("storeId")
-            StoreDetailScreen(
-                storeId = storeId,
-                onBack = { navController.popBackStack() },
-                parentNavController = navController
-            )
+            StoreDetailScreen(storeId, { navController.popBackStack() }, navController)
         }
 
-        // (Tu ruta 'products' con 'productCategoryId' (Int) en lugar de 'categoryName')
         composable(
             route = "products/{storeId}/{productCategoryId}",
             arguments = listOf(
@@ -135,73 +94,37 @@ fun NavGraph(
         ) { backStackEntry ->
             val storeId = backStackEntry.arguments?.getString("storeId")
             val productCategoryId = backStackEntry.arguments?.getInt("productCategoryId")
-            CategoryProductsScreen(
-                storeId = storeId,
-                productCategoryId = productCategoryId,
-                onBack = { navController.popBackStack() },
-                parentNavController = navController
-            )
+            CategoryProductsScreen(storeId, productCategoryId, { navController.popBackStack() }, navController)
         }
 
-        // (Tu nueva ruta 'product_detail')
         composable(
             route = "product_detail/{productId}",
             arguments = listOf(navArgument("productId") { type = NavType.StringType })
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
-            ProductDetailScreen(
-                productId = productId,
-                onBack = { navController.popBackStack() },
-                onGoToCart = {
-                    navController.navigate("main_screen?start_destination=cart") {
-                        popUpTo(navController.graph.startDestinationId)
-                    }
-                }
-            )
+            ProductDetailScreen(productId, { navController.popBackStack() }, { navController.navigate("main_screen?start_destination=cart") { popUpTo(navController.graph.startDestinationId) } })
         }
 
-        // (Tus rutas de checkout)
+        // --- RUTAS DE CHECKOUT ---
         composable(
             route = "checkout",
             enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
             exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) },
             popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
-        ) {CheckoutScreen(
-            onBack = { navController.popBackStack() },
-            onNavigateToProcessing = {
-                // ▼▼▼ LLAMADA PARA VACIAR EL CARRITO AQUÍ ▼▼▼
-                CartRepository.clearCart() // Vacía el carrito antes de ir a procesamiento
-                navController.navigate("processing_order") {
-                    popUpTo("home") { inclusive = false }
-                }
-            }
-        )
+        ) {
+            CheckoutScreen(onBack = { navController.popBackStack() }, onNavigateToProcessing = {
+                CartRepository.clearCart()
+                navController.navigate("processing_order") { popUpTo("home") { inclusive = false } }
+            })
         }
 
         composable("processing_order") {
-            ProcessingScreen(
-                onOrderProcessed = {
-                    navController.navigate("order_ready") {
-                        popUpTo("home") { inclusive = false }
-                    }
-                }
-            )
+            ProcessingScreen { navController.navigate("order_ready") { popUpTo("home") { inclusive = false } } }
         }
 
         composable("order_ready") {
-            OrderReadyScreen(
-                onGoToHome = {
-                    // ▼▼▼ CORRECCIÓN AQUÍ ▼▼▼
-                    navController.navigate("main_screen?start_destination=home") {
-                        // Limpia toda la pila de navegación de checkout (checkout, processing, order_ready)
-                        // y vuelve a la pantalla principal.
-                        popUpTo("main_screen") {
-                            inclusive = true
-                        }
-                    }
-                }
-            )
+            OrderReadyScreen { navController.navigate("main_screen?start_destination=home") { popUpTo("main_screen") { inclusive = true } } }
         }
     }
 }
