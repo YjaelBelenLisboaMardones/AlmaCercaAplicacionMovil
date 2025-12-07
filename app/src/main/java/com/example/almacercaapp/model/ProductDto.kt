@@ -1,12 +1,23 @@
 package com.example.almacercaapp.model
 
-// Data Transfer Object para Productos. 
-// Esta es la representación de un producto que se envía y recibe de la API.
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+/**
+ * Data Transfer Object para un Producto.
+ * Esta clase debe ser un reflejo EXACTO de la estructura JSON que envía el backend.
+ */
+@Serializable
 data class ProductDto(
-    val id: String,          // ID de MongoDB (es un String)
+    // Usamos @SerialName para mapear el "_id" de MongoDB al campo "id" de Kotlin.
+    @SerialName("_id")
+    val id: String? = null, // El ID que viene de la base de datos.
+
     val name: String,
     val description: String,
     val price: Double,
     val stock: Int,
-    val imageUrl: String
+    val storeId: String, // El ID de la tienda a la que pertenece.
+    val categoryId: String, // El ID de la categoría a la que pertenece.
+    val imageUrl: String // La URL de la imagen del producto.
 )

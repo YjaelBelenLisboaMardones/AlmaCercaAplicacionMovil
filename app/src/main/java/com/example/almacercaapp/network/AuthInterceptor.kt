@@ -9,28 +9,30 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
-// Este interceptor es el "guardia de seguridad" de nuestra red.
+/**
+ * Este interceptor es el "guardia de seguridad" de nuestra red.
+ * Ya no depende de UserRepository, sino directamente de DataStore para romper el ciclo.
+ */
 class AuthInterceptor(private val dataStore: DataStore<Preferences>) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        // Leemos el token actual desde DataStore de forma síncrona.
-        // Esto es aceptable aquí porque DataStore es muy rápido leyendo desde memoria.
-        val token = runBlocking {
+        // Lee el ID de usuario directamente desde DataStore.
+        val userId = runBlocking {
             dataStore.data.map { preferences ->
-                preferences[stringPreferencesKey("user_token")]
+                preferences[stringPreferencesKey("user_id")]
             }.first()
         }
 
         val originalRequest = chain.request()
 
-        // Si no hay token, dejamos la petición como está (para endpoints públicos como login).
-        if (token == null) {
+        // Si no hay userId, la petición continúa sin cabecera (para login, etc.)
+        if (userId == null) {
             return chain.proceed(originalRequest)
         }
 
-        // Si hay token, construimos una nueva petición con la cabecera de autorización.
+        // Si hay userId, se añade la cabecera.
         val newRequest = originalRequest.newBuilder()
-            .header("Authorization", "Bearer $token")
+            .header("userId", userId)
             .build()
 
         return chain.proceed(newRequest)

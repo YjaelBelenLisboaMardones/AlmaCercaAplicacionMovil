@@ -1,7 +1,6 @@
 package com.example.almacercaapp.ui.theme.screen
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,11 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.almacercaapp.viewmodel.ProductDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +48,7 @@ fun ProductDetailScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Detalle del Producto", fontSize = 16.sp) }, // Título opcional
+                title = { Text("Detalle del Producto", fontSize = 16.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
@@ -103,8 +102,9 @@ fun ProductDetailScreen(
                         .height(300.dp)
                         .background(Color(0xFFF5F5F5)) // Fondo gris claro
                 ) {
-                    Image(
-                        painter = painterResource(id = product.imageRes),
+                    // ▼▼▼ ¡CORRECCIÓN 1! Se usa AsyncImage para cargar desde URL ▼▼▼
+                    AsyncImage(
+                        model = product.imageUrl,
                         contentDescription = product.name,
                         modifier = Modifier
                             .fillMaxSize()
@@ -141,8 +141,9 @@ fun ProductDetailScreen(
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
+                        // ▼▼▼ ¡CORRECCIÓN 2! Se eliminó la referencia a `product.size` y se muestra el stock ▼▼▼
                         Text(
-                            text = product.size,
+                            text = "Stock disponible: ${product.stock}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Gray
                         )

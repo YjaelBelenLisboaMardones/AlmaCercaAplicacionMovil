@@ -57,7 +57,7 @@ object CartRepository {
         }
     }
 
-    fun incrementQuantity(productId: Int) {
+    fun incrementQuantity(productId: String) {
         _uiState.update { currentState ->
             val newItems = currentState.items.map {
                 if (it.product.id == productId) it.copy(quantity = it.quantity + 1) else it
@@ -66,7 +66,7 @@ object CartRepository {
         }
     }
 
-    fun decrementQuantity(productId: Int) {
+    fun decrementQuantity(productId: String) {
         _uiState.update { currentState ->
             val itemToDecrement = currentState.items.find { it.product.id == productId }
             val newItems = if (itemToDecrement != null && itemToDecrement.quantity > 1) {
@@ -80,7 +80,7 @@ object CartRepository {
         }
     }
 
-    fun removeItem(productId: Int) {
+    fun removeItem(productId: String) {
         _uiState.update { currentState ->
             val newItems = currentState.items.filterNot { it.product.id == productId }
             currentState.copy(items = newItems)

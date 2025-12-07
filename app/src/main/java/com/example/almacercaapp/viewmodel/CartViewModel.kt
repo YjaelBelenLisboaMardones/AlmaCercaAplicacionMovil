@@ -2,35 +2,32 @@ package com.example.almacercaapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.almacercaapp.model.Product
-import com.example.almacercaapp.model.CartRepository // <-- IMPORTANTE
-
-/**
- *cartuistate fue movido a cart repository, para que no me cree otra instancia vacia
- * yy todo se almacene en repository como object y no me rompa la consistencia dedatos
- *  Modelo que representa el estado completo de la pantalla del carrito.
- */
-
-
-// --- VIEWMODEL DEL CARRITO ---
+import com.example.almacercaapp.model.CartRepository
 
 class CartViewModel : ViewModel() {
-    // 1. El ViewModel expone el estado del Repositorio
+    // 1. El ViewModel simplemente expone el estado del Repositorio.
     val uiState = CartRepository.uiState
 
-    // 2. Las acciones solo llaman al Repositorio
+    // 2. Las acciones del ViewModel ahora solo actúan como un puente,
+    //    pasando los datos a la lógica central que vive en el Repositorio.
+
     fun addProduct(product: Product) {
         CartRepository.addProduct(product)
     }
 
-    fun incrementQuantity(productId: Int) {
+    // --- ¡AQUÍ ESTÁ LA CORRECCIÓN FINAL! ---
+    // Las funciones ahora aceptan `productId` como un String, que coincide
+    // con el modelo de datos `Product` y la llamada desde `CartScreen`.
+
+    fun incrementQuantity(productId: String) {
         CartRepository.incrementQuantity(productId)
     }
 
-    fun decrementQuantity(productId: Int) {
+    fun decrementQuantity(productId: String) {
         CartRepository.decrementQuantity(productId)
     }
 
-    fun removeItem(productId: Int) {
+    fun removeItem(productId: String) {
         CartRepository.removeItem(productId)
     }
 

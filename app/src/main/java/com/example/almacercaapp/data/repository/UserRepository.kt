@@ -6,8 +6,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.almacercaapp.model.LoginRequest
 import com.example.almacercaapp.model.RegisterRequest
-import com.example.almacercaapp.network.ApiService
 import com.example.almacercaapp.model.UserRole
+import com.example.almacercaapp.network.ApiService
 import kotlinx.coroutines.flow.map
 
 class UserRepository(
@@ -16,7 +16,7 @@ class UserRepository(
 ) {
 
     private object PreferencesKeys {
-        val USER_TOKEN = stringPreferencesKey("user_token")
+        val USER_ID = stringPreferencesKey("user_id")
         val USER_ROLE = stringPreferencesKey("user_role")
     }
 
@@ -29,7 +29,7 @@ class UserRepository(
 
             if (response.isSuccessful && response.body() != null) {
                 val loginResponse = response.body()!!
-                saveUserSession(token = loginResponse.token, role = loginResponse.role)
+                saveUserSession(userId = loginResponse.userId, role = loginResponse.role)
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("Credenciales inválidas"))
@@ -46,7 +46,7 @@ class UserRepository(
 
             if (response.isSuccessful && response.body() != null) {
                 val loginResponse = response.body()!!
-                saveUserSession(token = loginResponse.token, role = loginResponse.role)
+                saveUserSession(userId = loginResponse.userId, role = loginResponse.role)
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("Error en el registro. El correo podría ya existir."))
@@ -58,16 +58,16 @@ class UserRepository(
 
     // --- LOCAL SESSION MANAGEMENT ---
 
-    private suspend fun saveUserSession(token: String, role: String) {
+    private suspend fun saveUserSession(userId: String, role: String) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.USER_TOKEN] = token
+            preferences[PreferencesKeys.USER_ID] = userId
             preferences[PreferencesKeys.USER_ROLE] = role
         }
     }
 
-    // Expone el Flow del token para que el interceptor pueda leerlo
-    val userTokenFlow = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.USER_TOKEN]
+    // Expone el Flow del ID de usuario (NOMBRE CORREGIDO)
+    val userIdFlow = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.USER_ID]
     }
 
     // Expone el Flow del rol para que el ViewModel pueda leerlo

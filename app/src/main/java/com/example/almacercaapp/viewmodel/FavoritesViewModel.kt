@@ -1,42 +1,40 @@
 package com.example.almacercaapp.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.almacercaapp.model.FavoritesRepository
+import androidx.lifecycle.viewModelScope
+import com.example.almacercaapp.data.repository.ProductRepository
+import com.example.almacercaapp.model.ProductDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
+/**
+ * ViewModel para la pantalla de Favoritos.
+ * Por ahora, mostrará todos los productos de la tienda principal.
+ */
+class FavoritesViewModel(private val productRepository: ProductRepository) : ViewModel() {
 
-data class FavoritesUiState(
-    val showNotification: Boolean = false,
-    val notificationText: String = ""
-)
+    private val _products = MutableStateFlow<List<ProductDto>>(emptyList())
+    val products = _products.asStateFlow()
 
-class FavoritesViewModel : ViewModel() {
-    // Expone la lista de productos favoritos desde el Repositorio
-    val favoriteProducts = FavoritesRepository.favoriteProducts
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
 
-    private val _uiState = MutableStateFlow(FavoritesUiState())
-    val uiState = _uiState.asStateFlow()
-
-    // Expone la acción de añadir todo al carrito
-    fun addAllToCart() {
-        // Cuenta los items ANTES de añadirlos
-        val itemsCount = FavoritesRepository.favoriteProducts.value.size
-        if (itemsCount == 0) return // No hagas nada si no hay favoritos
-
-        // Llama a la lógica del Repositorio
-        FavoritesRepository.addAllToCart()
-
-        // Elige el texto correcto
-        val text = if (itemsCount == 1) "1 favorito añadido" else "$itemsCount favoritos añadidos"
-
-        // Actualiza el estado para mostrar la notificación
-        _uiState.update { it.copy(showNotification = true, notificationText = text) }
+    init {
+        // Carga los productos en cuanto el ViewModel se crea.
+        loadAllProducts()
     }
 
-    fun notificationShown() {
-        _uiState.update { it.copy(showNotification = false, notificationText = "") }
+    fun loadAllProducts() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            // Llama al repositorio para obtener los productos desde la nube.
+            productRepository.getAllProducts().onSuccess {
+                _products.value = it
+            }.onFailure {
+                // Opcional: manejar el error, por ejemplo, mostrando un mensaje.
+            }
+            _isLoading.value = false
+        }
     }
-
 }

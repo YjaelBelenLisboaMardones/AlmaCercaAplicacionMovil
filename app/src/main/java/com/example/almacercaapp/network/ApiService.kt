@@ -1,17 +1,24 @@
 package com.example.almacercaapp.network
 
-import com.example.almacercaapp.model.CartItemDto
-import com.example.almacercaapp.model.LoginRequest
-import com.example.almacercaapp.model.LoginResponse
-import com.example.almacercaapp.model.ProductDto
-import com.example.almacercaapp.model.RegisterRequest
+import com.example.almacercaapp.model.*
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.DELETE
+import retrofit2.http.Path
 
+/**
+ * Define el contrato de comunicación entre la App (Frontend) y la API REST (Backend).
+ * Cada función corresponde a un endpoint específico, con nombres descriptivos.
+ */
 interface ApiService {
 
-    // --- RUTAS PÚBLICAS ---
+    // =================================================================================
+    // --- ENDPOINTS PÚBLICOS (No requieren autenticación especial) ---
+    // =================================================================================
+
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
@@ -19,29 +26,33 @@ interface ApiService {
     suspend fun register(@Body request: RegisterRequest): Response<LoginResponse>
 
     @GET("api/products")
-    suspend fun listarProductos(): Response<List<ProductDto>>
+    suspend fun getAllProductsFromDefaultStore(): Response<List<ProductDto>>
 
-    // --- RUTAS PROTEGIDAS (CLIENTE) ---
+    @GET("api/products/category/{categoryId}")
+    suspend fun getProductsByCategory(@Path("categoryId") categoryId: String): Response<List<ProductDto>>
+
+
+    // =================================================================================
+    // --- ENDPOINTS DE CLIENTE (Asumen un contexto de usuario en el backend) ---
+    // =================================================================================
+
     @GET("api/cart")
-    suspend fun obtenerCarrito(): Response<List<CartItemDto>>
+    suspend fun getMyCart(): Response<CartItemDto>
 
     @POST("api/cart/add")
-    suspend fun agregarProducto(
-        @Body item: CartItemDto
-    ): Response<Void>
+    suspend fun addProductToMyCart(@Body item: CartItemDto): Response<Void>
 
-    // --- RUTAS PROTEGIDAS (ADMIN) ---
+
+    // =================================================================================
+    // --- ENDPOINTS DE ADMIN (Corresponden a `ProductAdminController`) ---
+    // =================================================================================
+
     @POST("api/admin/products")
     suspend fun createProduct(@Body product: ProductDto): Response<ProductDto>
 
-    @PUT("api/admin/products/{id}")
-    suspend fun updateProduct(
-        @Path("id") id: String,
-        @Body product: ProductDto
-    ): Response<ProductDto>
+    @PUT("api/admin/products/{productId}")
+    suspend fun updateProduct(@Path("productId") productId: String, @Body product: ProductDto): Response<ProductDto>
 
-    @DELETE("api/admin/products/{id}")
-    suspend fun deleteProduct(
-        @Path("id") id: String
-    ): Response<Unit> // Response<Unit> para éxito sin cuerpo
+    @DELETE("api/admin/products/{productId}")
+    suspend fun deleteProduct(@Path("productId") productId: String): Response<Void>
 }
