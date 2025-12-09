@@ -6,11 +6,11 @@ package com.example.almacercaapp.model
  */
 data class Product(
     val id: String,
+    val categoryId: String,
     val name: String,
     val description: String,
     val price: Double,
-    val imageUrl: String, // Usamos la URL de la imagen en lugar de un recurso local
+    val storeId: String,
     val stock: Int,
-    val categoryId: String,
-    val storeId: String
+    val imageUrl: String // Usamos la URL de la imagen en lugar de un recurso local
 )

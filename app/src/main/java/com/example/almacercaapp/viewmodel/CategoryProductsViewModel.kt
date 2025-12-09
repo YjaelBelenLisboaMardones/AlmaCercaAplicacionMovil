@@ -1,5 +1,6 @@
 package com.example.almacercaapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.almacercaapp.R
 import com.example.almacercaapp.data.repository.ProductRepository
@@ -13,23 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-
-/**
- * Función de extensión para convertir el modelo de Red (DTO) al modelo de UI.
- * Esto desacopla la capa de red de la capa de presentación.
- */
-private fun ProductDto.toProduct(): Product {
-    return Product(
-        id = this.id ?: "", // Aseguramos que el id no sea nulo para la UI
-        name = this.name,
-        description = this.description,
-        price = this.price,
-        imageUrl = this.imageUrl,
-        stock = this.stock,
-        categoryId = this.categoryId,
-        storeId = this.storeId
-    )
-}
 
 // ¡CORREGIDO! El estado de la UI ahora usa el modelo `Product` que es compatible con la red.
 data class CategoryProductsUiState(
@@ -68,17 +52,17 @@ class CategoryProductsViewModel(private val productRepository: ProductRepository
         val store = allStores.find { it.id == storeIdAsInt }
 
         _uiState.update { it.copy(isLoading = true, categoryName = categoryName, store = store, error = null) }
+        Log.d("CategoryProductsVM", "Cargando productos para la categoría ID: $categoryId")
 
         viewModelScope.launch {
             productRepository.getProductsByCategory(categoryId)
-                .onSuccess { productsFromCloud -> // `productsFromCloud` es una List<ProductDto>
-                    // ▼▼▼ ¡AQUÍ ESTÁ LA SOLUCIÓN! ▼▼▼
-                    // Convertimos la lista de DTOs a una lista del modelo de UI (`Product`)
+                .onSuccess { productsFromCloud ->
+                    Log.d("CategoryProductsVM", "Respuesta de la API exitosa. Productos recibidos: ${productsFromCloud.size}")
                     val uiProducts = productsFromCloud.map { it.toProduct() }
-
                     _uiState.update { it.copy(products = uiProducts, isLoading = false) }
                 }
                 .onFailure { exception ->
+                    Log.e("CategoryProductsVM", "Error al llamar a la API para la categoría $categoryId", exception)
                     _uiState.update { it.copy(
                         products = emptyList(),
                         isLoading = false,

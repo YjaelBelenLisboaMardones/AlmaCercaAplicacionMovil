@@ -5,8 +5,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -25,7 +23,8 @@ fun NavGraph(
     authViewModel: AuthViewModel, 
     adminViewModel: AdminViewModel,
     categoryProductsViewModel: CategoryProductsViewModel,
-    favoritesViewModel: FavoritesViewModel // <-- PARÁMETRO AÑADIDO
+    favoritesViewModel: FavoritesViewModel,
+    productDetailViewModel: ProductDetailViewModel // <-- ¡AÑADIDO!
 ) {
 
     val fadeAnimation = tween<Float>(400)
@@ -62,7 +61,6 @@ fun NavGraph(
             arguments = listOf(navArgument("start_destination") { type = NavType.StringType; nullable = true; defaultValue = null })
         ) { backStackEntry ->
             val startDestination = backStackEntry.arguments?.getString("start_destination")
-            // **AQUÍ OCURRE LA MAGIA**: Le pasamos el ViewModel a la pantalla principal
             MainScreen(
                 parentNavController = navController, 
                 startDestination = startDestination)
@@ -90,7 +88,12 @@ fun NavGraph(
             arguments = listOf(navArgument("productId") { type = NavType.StringType })
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
-            ProductDetailScreen(productId, { navController.popBackStack() }, { navController.navigate("main_screen?start_destination=cart") { popUpTo(navController.graph.startDestinationId) } })
+            // --- ¡CORREGIDO! Se pasa el ViewModel correcto a la pantalla ---
+            ProductDetailScreen(
+                productId = productId, 
+                viewModel = productDetailViewModel, 
+                onBack = { navController.popBackStack() }, 
+                onGoToCart = { navController.navigate("main_screen?start_destination=cart") { popUpTo(navController.graph.startDestinationId) } })
         }
 
         composable("checkout") { CheckoutScreen({ navController.popBackStack() }, { CartRepository.clearCart(); navController.navigate("processing_order") { popUpTo("home") } }) }

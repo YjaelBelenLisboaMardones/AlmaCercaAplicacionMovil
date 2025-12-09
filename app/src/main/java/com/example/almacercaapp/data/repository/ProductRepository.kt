@@ -10,16 +10,51 @@ import com.example.almacercaapp.network.ApiService
  */
 class ProductRepository(private val apiService: ApiService) {
 
+    // --- ¡SOLUCIÓN! Caché en memoria para los productos --- 
+    private val productCache = mutableMapOf<String, ProductDto>()
+
+    /**
+     * Obtiene un producto específico por su ID.
+     * PRIMERO busca en el caché. Si no lo encuentra, intenta la llamada a la red.
+     */
+    suspend fun getProductById(productId: String): Result<ProductDto> {
+        // 1. Intentar obtener desde el caché
+        val cachedProduct = productCache[productId]
+        if (cachedProduct != null) {
+            return Result.success(cachedProduct)
+        }
+
+        // 2. Si no está en caché, intentar la llamada a la red (que puede fallar por seguridad)
+        return try {
+            val allProductsResult = getAllProducts()
+            allProductsResult.fold(
+                onSuccess = {
+                    val product = it.find { productDto -> productDto.id == productId }
+                    if (product != null) {
+                        Result.success(product)
+                    } else {
+                        Result.failure(Exception("Producto no encontrado con ID: $productId"))
+                    }
+                },
+                onFailure = { Result.failure(it) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     /**
      * Llama al backend para obtener solo los productos de una categoría específica.
-     * Utilizado por la vista del cliente.
+     * Y guarda los resultados en el caché para uso futuro.
      */
     suspend fun getProductsByCategory(categoryId: String): Result<List<ProductDto>> {
         return try {
-            // Volvemos a pasar el String directamente
             val response = apiService.getProductsByCategory(categoryId)
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val products = response.body()!!
+                // ¡Guardar en caché!
+                products.forEach { product -> product.id?.let { productCache[it] = product } }
+                Result.success(products)
             } else {
                 val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
                 Result.failure(Exception("Error ${response.code()}: $errorBody"))
@@ -30,9 +65,28 @@ class ProductRepository(private val apiService: ApiService) {
     }
 
     /**
-     * Llama al backend para crear un nuevo producto.
-     * Utilizado por el panel de administración.
+     * Llama al backend para obtener TODOS los productos.
+     * Y guarda los resultados en el caché.
      */
+    suspend fun getAllProducts(): Result<List<ProductDto>> {
+        return try {
+            val response = apiService.getAllProductsFromDefaultStore()
+            if (response.isSuccessful && response.body() != null) {
+                val products = response.body()!!
+                // ¡Guardar en caché!
+                products.forEach { product -> product.id?.let { productCache[it] = product } }
+                Result.success(products)
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
+                Result.failure(Exception("Error ${response.code()}: $errorBody"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // --- Funciones de Admin (crear, actualizar, eliminar) ---
+
     suspend fun createProduct(product: ProductDto): Result<ProductDto> {
         return try {
             val response = apiService.createProduct(product)
@@ -47,22 +101,6 @@ class ProductRepository(private val apiService: ApiService) {
         }
     }
     
-    /**
-     * Llama al backend para obtener TODOS los productos (usado por el admin).
-     */
-    suspend fun getAllProducts(): Result<List<ProductDto>> {
-        return try {
-            val response = apiService.getAllProductsFromDefaultStore()
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
-                Result.failure(Exception("Error ${response.code()}: $errorBody"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
      suspend fun updateProduct(product: ProductDto): Result<ProductDto> {
         return try {
             val response = apiService.updateProduct(product.id!!, product)

@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
@@ -81,7 +82,7 @@ fun StoreDetailScreen(
 fun StoreDetailContent(
     uiState: StoreDetailUiState,
     onBack: () -> Unit,
-    parentNavController: NavHostController // <-- 3. RECÍBELO aquí para usarlo más abajo
+    parentNavController: NavHostController
 ) {
     // ¡CLAVE! Obtenemos la tienda desde el uiState que recibimos.
     val store = uiState.store!!
@@ -89,103 +90,102 @@ fun StoreDetailContent(
     // Obtenemos el nombre de la categoría ("Botillería") a partir del ID (2) que tiene la tienda.
     // Lo leemos del uiState, que es la fuente de verdad que nos da el ViewModel.
     val storeCategoryName = uiState.storeCategoryName
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxSize(),
+        // Espaciado para la cuadrícula de categorías
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 16.dp) // Padding solo en la parte inferior
     ) {
-        // (Header) - No necesita cambios
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-        ) {
-            // Le pasamos el NOMBRE de la categoría a la función.
-            val headerImage = getHeaderImageForCategory(storeCategoryName)
-            Image(
-                painter = painterResource(id = headerImage),
-                contentDescription = "Imagen de ${store.name}",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack, modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), CircleShape)) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver atrás", tint = Color.White)
+        // --- CABECERA Y CONTENIDO SUPERIOR ---
+        // Ocupa todo el ancho de la pantalla
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Column {
+                // Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                ) {
+                    val headerImage = getHeaderImageForCategory(storeCategoryName)
+                    Image(
+                        painter = painterResource(id = headerImage),
+                        contentDescription = "Imagen de ${store.name}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onBack, modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), CircleShape)) {
+                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver atrás", tint = Color.White)
+                        }
+                        IconButton(onClick = { /* TODO */ }, modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), CircleShape)) {
+                            Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Más opciones", tint = Color.White)
+                        }
+                    }
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .offset(y = 30.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = store.logoRes),
+                            contentDescription = "Logo de ${store.name}",
+                            modifier = Modifier.size(90.dp).padding(8.dp)
+                        )
+                    }
                 }
-                IconButton(onClick = { /* TODO */ }, modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), CircleShape)) {
-                    Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Más opciones", tint = Color.White)
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                // Contenido debajo de la cabecera
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text(text = store.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) { /* ... */ }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = store.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { /* ... */ }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SearchBarComponent(
+                        query = "", onQueryChange = {}, onSearch = {},
+                        searchResults = emptyList(), placeholderText = "Busca el artículo en la tienda"
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
-            Card(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset(y = 30.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = store.logoRes),
-                    contentDescription = "Logo de ${store.name}",
-                    modifier = Modifier.size(90.dp).padding(8.dp)
+        }
+
+        // --- CUADRÍCULA DE CATEGORÍAS DE PRODUCTOS ---
+        // Se añaden los items a la grid, pero con un padding horizontal para que no peguen a los bordes
+        items(uiState.productCategories, key = { it.id }) { category ->
+            Box(modifier = Modifier.padding(horizontal = if (uiState.productCategories.indexOf(category) % 2 == 0) 16.dp else 0.dp, // Padding izquierdo para la primera columna
+            )) {
+                ProductCategoryItem(
+                    productCategory = category,
+                    onClick = {
+                        parentNavController.navigate(
+                            "products/${store.id}/${category.id}"
+                        )
+                    }
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // --- CONTENIDO DEBAJO DE LA CABECERA ---
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            // (Nombre, Valoración, Descripción, Chips y SearchBar - no necesitan cambios)
-            Text(text = store.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) { /* ... */ }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = store.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { /* ... */ }
-            Spacer(modifier = Modifier.height(16.dp))
-            SearchBarComponent(
-                query = "", onQueryChange = {}, onSearch = {},
-                searchResults = emptyList(), placeholderText = "Busca el artículo en la tienda"
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- CUADRÍCULA DE CATEGORÍAS DE PRODUCTOS ---
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.height(300.dp), // Ajusta esta altura
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(uiState.productCategories) { category ->
-                    ProductCategoryItem(
-                        productCategory = category,
-                        // ▼▼▼ ¡LÓGICA ONCLICK IMPLEMENTADA! ▼▼▼
-                        onClick = {
-                            // 4. Usa el parentNavController para navegar a la nueva ruta,
-                            // pasando dinámicamente el ID de la tienda y el nombre de la categoría.
-
-                            parentNavController.navigate(
-                                "products/${store.id}/${category.id}"                            )
-                        }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
     }
 }
+
+
 
 /**
  * Función ayudante que devuelve el ID de la imagen de cabecera

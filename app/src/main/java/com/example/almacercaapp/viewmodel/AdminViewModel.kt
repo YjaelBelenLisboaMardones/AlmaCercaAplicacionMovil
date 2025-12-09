@@ -1,5 +1,6 @@
 package com.example.almacercaapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.almacercaapp.data.repository.ProductRepository
@@ -37,8 +38,10 @@ class AdminViewModel(private val productRepository: ProductRepository) : ViewMod
     fun loadAllProducts() {
         viewModelScope.launch {
             productRepository.getAllProducts().onSuccess {
+                Log.d("AdminViewModel", "Productos cargados con éxito: ${it.size} productos.")
                 products.value = it
             }.onFailure {
+                Log.e("AdminViewModel", "Error al cargar productos", it)
                 uiStatus.value = "Error al cargar productos: ${it.message}"
             }
         }

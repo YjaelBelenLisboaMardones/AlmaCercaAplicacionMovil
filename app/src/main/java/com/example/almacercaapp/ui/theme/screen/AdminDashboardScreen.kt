@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.almacercaapp.R
-import com.example.almacercaapp.model.ProductCategory
 import com.example.almacercaapp.model.ProductDto
 import com.example.almacercaapp.viewmodel.AdminViewModel
 import kotlinx.coroutines.launch
@@ -73,10 +72,10 @@ private fun AdminScaffoldContent(viewModel: AdminViewModel, currentScreen: Strin
     LaunchedEffect(uiStatus) {
         uiStatus?.let {
             snackbarHostState.showSnackbar(message = it, duration = SnackbarDuration.Short)
-            if (it.contains("éxito")) { // Si el mensaje es de éxito, cierra el bottom sheet
+            if (it.contains("éxito")) {
                 showBottomSheet = false
             }
-            viewModel.uiStatus.value = null // Limpia el mensaje después de mostrarlo
+            viewModel.uiStatus.value = null
         }
     }
 
@@ -85,8 +84,7 @@ private fun AdminScaffoldContent(viewModel: AdminViewModel, currentScreen: Strin
         floatingActionButton = {
             if (currentScreen == "Gestión Productos") {
                 FloatingActionButton(onClick = {
-                    // Llama a la función que SÍ existe en la lógica antigua para limpiar el formulario
-                    viewModel.resetProductFields()
+                    viewModel.resetProductFields() // Limpiar campos para un nuevo producto
                     showBottomSheet = true
                 }) { Icon(Icons.Default.Add, "Añadir Producto") }
             }
@@ -96,45 +94,38 @@ private fun AdminScaffoldContent(viewModel: AdminViewModel, currentScreen: Strin
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (currentScreen) {
                 "Dashboard" -> DashboardHomeScreen()
-                // La pantalla de gestión ya no necesita pasar las funciones de editar/eliminar
-                "Gestión Productos" -> ProductManagementScreen(viewModel = viewModel)
+                "Gestión Productos" -> ProductManagementScreen(
+                    viewModel = viewModel,
+                    onEditClick = {
+                        viewModel.loadProductForEdit(it)
+                        showBottomSheet = true
+                    },
+                    onDeleteClick = { viewModel.deleteProduct(it) }
+                )
             }
 
             if (showBottomSheet) {
                 ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) {
-                    // Usa un formulario que solo sabe cómo crear productos
-                    CreateProductForm(viewModel = viewModel)
+                    CreateOrEditProductForm(viewModel = viewModel)
                 }
             }
-
-            // Se elimina el diálogo de confirmación porque la lógica ya no existe
         }
     }
 }
 
-// --- PANTALLAS DE CONTENIDO ---
-
 @Composable
-fun DashboardHomeScreen() {
-    ComingSoonScreen("Dashboard en Construcción", "Próximamente: estadísticas de ventas y más.")
-}
-
-@Composable
-fun ProductManagementScreen(viewModel: AdminViewModel) {
+fun ProductManagementScreen(viewModel: AdminViewModel, onEditClick: (String) -> Unit, onDeleteClick: (ProductDto) -> Unit) {
     val products by viewModel.products.collectAsState()
 
     if (products.isEmpty()) {
         ComingSoonScreen("No hay productos", "Crea el primero usando el botón '+'")
     } else {
-        // La lista de productos ya no necesita los callbacks de onEditClick y onDeleteClick
-        ProductList(products = products)
+        ProductList(products = products, onEditClick = onEditClick, onDeleteClick = onDeleteClick)
     }
 }
 
-// --- COMPONENTES VISUALES ---
-
 @Composable
-fun ProductList(products: List<ProductDto>) {
+fun ProductList(products: List<ProductDto>, onEditClick: (String) -> Unit, onDeleteClick: (ProductDto) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         contentPadding = PaddingValues(16.dp),
@@ -142,14 +133,13 @@ fun ProductList(products: List<ProductDto>) {
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(products, key = { it.id!! }) { product ->
-            // La tarjeta ahora es más simple, solo muestra información
-            AdminProductCard(product = product)
+            AdminProductCard(product = product, onEditClick = { onEditClick(product.id!!) }, onDeleteClick = { onDeleteClick(product) })
         }
     }
 }
 
 @Composable
-fun AdminProductCard(product: ProductDto) {
+fun AdminProductCard(product: ProductDto, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column {
             AsyncImage(
@@ -161,7 +151,11 @@ fun AdminProductCard(product: ProductDto) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(product.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("Stock: ${product.stock}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                // Ya no hay botones de editar/eliminar aquí
+                Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+                    IconButton(onClick = onEditClick, modifier = Modifier.size(24.dp)) { Icon(Icons.Default.Edit, contentDescription = "Editar") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp)) { Icon(Icons.Default.Delete, contentDescription = "Eliminar") }
+                }
             }
         }
     }
@@ -169,45 +163,51 @@ fun AdminProductCard(product: ProductDto) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateProductForm(viewModel: AdminViewModel) {
+fun CreateOrEditProductForm(viewModel: AdminViewModel) {
     val name by viewModel.productName.collectAsState()
     val description by viewModel.productDescription.collectAsState()
     val price by viewModel.productPrice.collectAsState()
     val stock by viewModel.productStock.collectAsState()
     val imageUrl by viewModel.productImageUrl.collectAsState()
-    val selectedCategory by viewModel.selectedCategory.collectAsState()
-    val categories by viewModel.categories.collectAsState()
+    val editingProductId by viewModel.editingProductId.collectAsState()
 
-    var categoryMenuExpanded by remember { mutableStateOf(false) }
+    // --- Estados para el selector de categoría ---
+    val categories by viewModel.categories.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    var isDropdownExpanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 32.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Nuevo Producto", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(if (editingProductId != null) "Editar Producto" else "Nuevo Producto", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(value = name, onValueChange = { viewModel.productName.value = it }, label = { Text("Nombre del producto") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(value = description, onValueChange = { viewModel.productDescription.value = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.height(16.dp))
 
-        ExposedDropdownMenuBox(expanded = categoryMenuExpanded, onExpandedChange = { categoryMenuExpanded = !categoryMenuExpanded }) {
+        // --- Selector de Categoría ---
+        ExposedDropdownMenuBox(expanded = isDropdownExpanded, onExpandedChange = { isDropdownExpanded = !isDropdownExpanded }) {
             OutlinedTextField(
-                value = selectedCategory?.name ?: "Selecciona una categoría",
-                onValueChange = {},
+                value = selectedCategory?.name ?: "",
+                onValueChange = {}, // No se cambia directamente
                 readOnly = true,
                 label = { Text("Categoría") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded) },
+                modifier = Modifier.fillMaxWidth().menuAnchor()
             )
-            ExposedDropdownMenu(expanded = categoryMenuExpanded, onDismissRequest = { categoryMenuExpanded = false }) {
+            ExposedDropdownMenu(expanded = isDropdownExpanded, onDismissRequest = { isDropdownExpanded = false }) {
                 categories.forEach { category ->
-                    DropdownMenuItem(text = { Text(category.name) }, onClick = {
-                        viewModel.selectedCategory.value = category
-                        categoryMenuExpanded = false
-                    })
+                    DropdownMenuItem(
+                        text = { Text(category.name) },
+                        onClick = {
+                            viewModel.selectedCategory.value = category
+                            isDropdownExpanded = false
+                        }
+                    )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = description, onValueChange = { viewModel.productDescription.value = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(value = price, onValueChange = { viewModel.productPrice.value = it }, label = { Text("Precio") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         Spacer(modifier = Modifier.height(16.dp))
@@ -216,12 +216,16 @@ fun CreateProductForm(viewModel: AdminViewModel) {
         OutlinedTextField(value = imageUrl, onValueChange = { viewModel.productImageUrl.value = it }, label = { Text("URL de la imagen") }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(24.dp))
 
-        // El botón solo llama a la función de guardar que SÍ existe en la lógica antigua
         Button(onClick = { viewModel.onSaveProduct() }, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-            Text("Crear Producto")
+            Text(if (editingProductId != null) "Guardar Cambios" else "Crear Producto")
         }
         Spacer(modifier = Modifier.height(24.dp))
     }
+}
+
+@Composable
+fun DashboardHomeScreen() {
+    ComingSoonScreen("Dashboard en Construcción", "Próximamente: estadísticas de ventas y más.")
 }
 
 @Composable

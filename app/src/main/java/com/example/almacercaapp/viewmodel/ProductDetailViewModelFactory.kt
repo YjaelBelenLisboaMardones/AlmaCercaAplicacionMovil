@@ -5,13 +5,13 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.almacercaapp.data.repository.ProductRepository
 
 /**
- * Factory para crear instancias de AdminViewModel con sus dependencias.
+ * Factory para crear instancias de ProductDetailViewModel con sus dependencias.
  */
-class AdminViewModelFactory(private val repository: ProductRepository) : ViewModelProvider.Factory {
+class ProductDetailViewModelFactory(private val repository: ProductRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AdminViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(ProductDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return AdminViewModel(repository) as T
+            return ProductDetailViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

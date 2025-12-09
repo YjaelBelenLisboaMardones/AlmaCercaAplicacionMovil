@@ -59,6 +59,8 @@ fun AppRoot() {
     val adminViewModel: AdminViewModel = viewModel(factory = AdminViewModelFactory(productRepository))
     val categoryProductsViewModel: CategoryProductsViewModel = viewModel(factory = CategoryProductsViewModelFactory(productRepository))
     val favoritesViewModel: FavoritesViewModel = viewModel(factory = FavoritesViewModelFactory(productRepository))
+    // --- ¡AÑADIDO! Se crea el ViewModel para la pantalla de detalle del producto ---
+    val productDetailViewModel: ProductDetailViewModel = viewModel(factory = ProductDetailViewModelFactory(productRepository))
 
     AlmaCercaAppTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -68,7 +70,8 @@ fun AppRoot() {
                 authViewModel = authViewModel,
                 adminViewModel = adminViewModel,
                 categoryProductsViewModel = categoryProductsViewModel,
-                favoritesViewModel = favoritesViewModel
+                favoritesViewModel = favoritesViewModel,
+                productDetailViewModel = productDetailViewModel // <-- ¡AÑADIDO! Se pasa al NavGraph
             )
         }
     }
