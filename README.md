@@ -38,3 +38,10 @@ POST/api/cartBUYERAgrega un ítem (producto + cantidad) al carrito.
 DELETE/api/cart/items/{productId}BUYERElimina un ítem específico del carrito.
 🔐 Nota de Seguridad: Para las rutas protegidas (ADMIN y BUYER), 
 es obligatorio enviar el Header: userId: [ID_DEL_USUARIO].
+
+## Reporte de Estado Operacional Sistene Almacerca V1.0
+El sistema AlmaCerca(MVP) ha avanzado a la fase de integración y testing. Se ha completado la migración hacia estabilización de la persistencia de datos y la planificación de la Infraestructura Cloud, utilizando MongoDB para la persistencia de datos. El servicio APIRest está preparado para soportar los dos flujos de negocios críticos: Compra y Gestión de Inventario(Admin).
+El flujo ode productos en la experiencia de Comprador ha sido validado y los endpoints(GET/ Productos) responden satisfactoriamente. El próximo paso de desarrollo requiere la validación de la integridad de datos para la funcionalidad del Carrito de Compras.
+
+## Incidente Abiero (P1) 
+Fallo de consistencia en la Gestión de Inventario. Se ha detectado una disfunción de alto impacto operacional en el módulo de Administración. Aunque el flujo Post de creación de producto retorna un código de respuesta 201(CREATED), el producto no se refleja en la lista al consultar el endpoint GET. Esto compromete la continuidad operacional del administrador, impidiendo la gestión de stock(edición/eliminación). La hipótesis del Triage es un fallo en la lógica de filtrado de la query de lectura del servicio.
