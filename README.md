@@ -1,9 +1,6 @@
 # AlmaCercaApp: Plataforma de Comercio Local
 ## 1. Resumen del Proyecto
-AlmaCercaApp es una aplicación móvil desarrollada en Jetpack Compose que establece una conexión directa y eficiente entre Compradores y Vendedores locales. El proyecto implementa una arquitectura robusta MVVM sobre Room (SQLite), destacando por su manejo de roles y la separación completa de flujos de trabajo.
-Nombres: 
-- Yjael Lisboa
-- Marcelo Palma
+AlmaCercaApp es una aplicación móvil desarrollada en Jetpack Compose que establece una conexión directa y eficiente entre Compradores y Vendedores locales. El proyecto implementa una arquitectura robusta MVVM, destacando por su manejo de roles y la separación completa de flujos de trabajo.
 ## 2. Funcionalidades Implementadas
 A. Autenticación y Flujo Condicional
 Selección de Rol: El flujo de registro inicia con la pantalla RoleSelectionScreen para que el usuario elija su rol (BUYER o SELLER).
