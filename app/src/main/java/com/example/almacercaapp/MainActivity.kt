@@ -24,12 +24,8 @@ import com.example.almacercaapp.navigation.NavGraph
 import com.example.almacercaapp.network.ApiService
 import com.example.almacercaapp.network.RetrofitClient
 import com.example.almacercaapp.ui.theme.AlmaCercaAppTheme
-import com.example.almacercaapp.viewmodel.AdminViewModel
-import com.example.almacercaapp.viewmodel.AdminViewModelFactory
-import com.example.almacercaapp.viewmodel.AuthViewModel
-import com.example.almacercaapp.viewmodel.AuthViewModelFactory
+import com.example.almacercaapp.viewmodel.*
 
-// Definición de DataStore para toda la app
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_session")
 
 class MainActivity : ComponentActivity() {
@@ -46,35 +42,36 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppRoot() {
-    // --- RAÍZ DE DEPENDENCIAS (MANUAL) ---
+    // --- RAÍZ DE DEPENDENCIAS (ARQUITECTURA CORRECTA Y LIMPIA) ---
     val context = LocalContext.current.applicationContext
     val dataStore = context.dataStore
+
+    // 1. Se crea el cliente Retrofit, pasándole solo el DataStore.
     val retrofitClient = RetrofitClient(dataStore)
     val apiService: ApiService = retrofitClient.instance
 
-    // --- CREACIÓN DE REPOSITORIOS ---
+    // 2. Se crean los repositorios, pasándoles la instancia única de ApiService.
     val userRepository = UserRepository(apiService, dataStore)
     val productRepository = ProductRepository(apiService)
 
-    // --- CREACIÓN DE VIEWMODELS ---
-    val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(userRepository)
-    )
-    val adminViewModel: AdminViewModel = viewModel(
-        factory = AdminViewModelFactory(productRepository)
-    )
+    // 3. Se crean los ViewModels, cada uno con su repositorio correspondiente.
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(userRepository))
+    val adminViewModel: AdminViewModel = viewModel(factory = AdminViewModelFactory(productRepository))
+    val categoryProductsViewModel: CategoryProductsViewModel = viewModel(factory = CategoryProductsViewModelFactory(productRepository))
+    val favoritesViewModel: FavoritesViewModel = viewModel(factory = FavoritesViewModelFactory(productRepository))
+    // --- ¡AÑADIDO! Se crea el ViewModel para la pantalla de detalle del producto ---
+    val productDetailViewModel: ProductDetailViewModel = viewModel(factory = ProductDetailViewModelFactory(productRepository))
 
     AlmaCercaAppTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             val navController = rememberNavController()
-            // Le pasamos TODOS los ViewModels al NavGraph para que los distribuya
             NavGraph(
                 navController = navController,
                 authViewModel = authViewModel,
-                adminViewModel = adminViewModel
+                adminViewModel = adminViewModel,
+                categoryProductsViewModel = categoryProductsViewModel,
+                favoritesViewModel = favoritesViewModel,
+                productDetailViewModel = productDetailViewModel // <-- ¡AÑADIDO! Se pasa al NavGraph
             )
         }
     }

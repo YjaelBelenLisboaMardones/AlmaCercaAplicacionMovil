@@ -32,16 +32,18 @@ object FavoritesRepository {
     /**
      * Revisa si un producto ya es favorito (para la pantalla de detalle).
      */
-    fun isFavorite(productId: Int): Boolean {
+    fun isFavorite(productId: String): Boolean {
+        // ¡CORREGIDO! Ahora compara String con String
         return _favoriteProducts.value.any { it.id == productId }
     }
 
     /**
      * Añade 1 unidad de cada producto favorito al carrito.
-     * (Usa la función 'addProduct' que ya existe en CartRepository)
      */
     fun addAllToCart() {
+        // ¡CORREGIDO! Itera sobre los favoritos y añade cada uno individualmente.
         _favoriteProducts.value.forEach { product ->
-            CartRepository.addAllProducts(_favoriteProducts.value)        }
+            CartRepository.addProduct(product)
+        }
     }
 }

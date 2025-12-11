@@ -1,159 +1,142 @@
 package com.example.almacercaapp.viewmodel
 
-import androidx.compose.runtime.mutableStateOf
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.almacercaapp.data.repository.ProductRepository
+import com.example.almacercaapp.model.ProductCategory
 import com.example.almacercaapp.model.ProductDto
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class AdminViewModel(private val productRepository: ProductRepository) : ViewModel() {
 
-    // --- ESTADO DE LA LISTA DE PRODUCTOS (AHORA INCLUIDO) ---
-    private val _products = MutableStateFlow<List<ProductDto>>(emptyList())
-    val products = _products.asStateFlow()
+    // --- STATE MANAGEMENT ---
+    val products = MutableStateFlow<List<ProductDto>>(emptyList())
+    val categories = MutableStateFlow<List<ProductCategory>>(emptyList())
+    val uiStatus = MutableStateFlow<String?>(null)
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-    val productToEdit = mutableStateOf<ProductDto?>(null)
-
-    // --- ESTADO DEL FORMULARIO DE CREACIÓN ---
-    val productName = mutableStateOf("")
-    val productDescription = mutableStateOf("")
-    val productPrice = mutableStateOf("")
-    val productStock = mutableStateOf("")
-    val productImageUrl = mutableStateOf("")
-
-    private val _creationStatus = MutableStateFlow<String?>(null)
-    val creationStatus = _creationStatus.asStateFlow()
+    // State for the "Add/Edit Product" screen/dialog
+    val productName = MutableStateFlow("")
+    val productDescription = MutableStateFlow("")
+    val productPrice = MutableStateFlow("")
+    val productStock = MutableStateFlow("")
+    val productImageUrl = MutableStateFlow("")
+    val selectedCategory = MutableStateFlow<ProductCategory?>(null)
+    
+    private val _editingProductId = MutableStateFlow<String?>(null)
+    val editingProductId: StateFlow<String?> = _editingProductId.asStateFlow()
 
     init {
-        // Carga los productos en cuanto el ViewModel se crea
-        loadProducts()
+        loadAllProducts()
+        categories.value = getMockCategories()
     }
 
-    fun startEditing(product: ProductDto) {
-        productToEdit.value = product
-        productName.value = product.name
-        productDescription.value = product.description
-        productPrice.value = product.price.toString()
-        productStock.value = product.stock.toString()
-        productImageUrl.value = product.imageUrl
-    }
-
-    fun finishEditing() {
-        productToEdit.value = null
-        productName.value = ""
-        productDescription.value = ""
-        productPrice.value = ""
-        productStock.value = ""
-        productImageUrl.value = ""
-    }
-    /**
-     * Carga la lista de productos desde el repositorio.
-     */
-    fun loadProducts() {
+    fun loadAllProducts() {
         viewModelScope.launch {
-            _isLoading.value = true
-            val result = productRepository.getProducts()
-            if (result.isSuccess) {
-                _products.value = result.getOrNull() ?: emptyList()
-            }
-            _isLoading.value = false
-        }
-    }
-
-    /**
-     * Llama al repositorio para crear un nuevo producto con los datos del formulario.
-     */
-    fun createProduct() {
-        if (productName.value.isBlank() || productPrice.value.isBlank()) {
-            _creationStatus.value = "Error: El nombre y el precio son obligatorios."
-            return
-        }
-
-        viewModelScope.launch {
-            _creationStatus.value = "Creando producto..."
-
-            val product = ProductDto(
-                id = "", // El backend debe generar el ID
-                name = productName.value,
-                description = productDescription.value,
-                price = productPrice.value.toDoubleOrNull() ?: 0.0,
-                stock = productStock.value.toIntOrNull() ?: 0,
-                imageUrl = productImageUrl.value
-            )
-
-            val result = productRepository.createProduct(product)
-
-            if (result.isSuccess) {
-                _creationStatus.value = "¡Producto creado con éxito!"
-                loadProducts() // Recarga la lista de productos para mostrar el nuevo
-                // Limpiar campos
-                productName.value = ""
-                productDescription.value = ""
-                productPrice.value = ""
-                productStock.value = ""
-                productImageUrl.value = ""
-            } else {
-                _creationStatus.value = result.exceptionOrNull()?.message ?: "Error desconocido"
+            productRepository.getAllProducts().onSuccess {
+                Log.d("AdminViewModel", "Productos cargados con éxito: ${it.size} productos.")
+                products.value = it
+            }.onFailure {
+                Log.e("AdminViewModel", "Error al cargar productos", it)
+                uiStatus.value = "Error al cargar productos: ${it.message}"
             }
         }
     }
 
-    fun updateProduct() {
-        val productToUpdate = productToEdit.value ?: return
-        if (productName.value.isBlank() || productPrice.value.isBlank()) {
-            _creationStatus.value = "Error: El nombre y el precio son obligatorios."
-            return
+    fun onSaveProduct() {
+        val productId = _editingProductId.value
+        if (productId != null) {
+            onUpdateProduct(productId)
+        } else {
+            onCreateProduct()
         }
+    }
 
+    private fun onCreateProduct() {
+        val newProduct = createProductDtoFromState(null)
         viewModelScope.launch {
-            _creationStatus.value = "Actualizando producto..."
+            productRepository.createProduct(newProduct).onSuccess {
+                uiStatus.value = "¡Producto creado con éxito!"
+                loadAllProducts()
+                resetProductFields()
+            }.onFailure {
+                uiStatus.value = "Error al crear el producto: ${it.message}"
+            }
+        }
+    }
 
-            val updatedProduct = productToUpdate.copy(
-                name = productName.value,
-                description = productDescription.value,
-                price = productPrice.value.toDoubleOrNull() ?: 0.0,
-                stock = productStock.value.toIntOrNull() ?: 0,
-                imageUrl = productImageUrl.value
-            )
-
-            val result = productRepository.updateProduct(updatedProduct)
-
-            if (result.isSuccess) {
-                _creationStatus.value = "¡Producto actualizado con éxito!"
-                loadProducts() // Recarga la lista
-                finishEditing() // Limpia el estado de edición y los campos
-            } else {
-                _creationStatus.value = result.exceptionOrNull()?.message ?: "Error desconocido al actualizar"
+    private fun onUpdateProduct(productId: String) {
+        val updatedProduct = createProductDtoFromState(productId)
+        viewModelScope.launch {
+            // ▼▼▼ ¡AQUÍ ESTÁ LA CORRECCIÓN! ▼▼▼
+            // La función solo necesita el objeto `updatedProduct`, que ya contiene el ID.
+            productRepository.updateProduct(updatedProduct).onSuccess {
+                uiStatus.value = "¡Producto actualizado con éxito!"
+                loadAllProducts()
+                resetProductFields()
+            }.onFailure {
+                uiStatus.value = "Error al actualizar: ${it.message}"
             }
         }
     }
 
     fun deleteProduct(product: ProductDto) {
         viewModelScope.launch {
-            _creationStatus.value = "Eliminando ${product.name}..."
-            val result = productRepository.deleteProduct(product.id)
-
-            if (result.isSuccess) {
-                _creationStatus.value = "Producto eliminado con éxito."
-                // Actualiza el flujo de productos sin recargar (optimización)
-                _products.update { currentList ->
-                    currentList.filter { it.id != product.id }
-                }
-            } else {
-                _creationStatus.value = result.exceptionOrNull()?.message ?: "Error desconocido al eliminar"
+            if (product.id == null) {
+                uiStatus.value = "Error: El producto no tiene un ID válido."
+                return@launch
+            }
+            productRepository.deleteProduct(product.id).onSuccess {
+                uiStatus.value = "Producto '${product.name}' eliminado."
+                products.update { currentList -> currentList.filterNot { it.id == product.id } }
+            }.onFailure {
+                uiStatus.value = "Error al eliminar: ${it.message}"
             }
         }
     }
-    /**
-     * Limpia el mensaje de estado para que no se muestre indefinidamente.
-     */
-    fun clearStatusMessage() {
-        _creationStatus.value = null
+
+    fun loadProductForEdit(productId: String) {
+        val product = products.value.find { it.id == productId } ?: return
+        _editingProductId.value = product.id
+        productName.value = product.name
+        productDescription.value = product.description
+        productPrice.value = product.price.toString()
+        productStock.value = product.stock.toString()
+        productImageUrl.value = product.imageUrl
+        selectedCategory.value = categories.value.find { it.id == product.categoryId }
+    }
+
+    fun resetProductFields() {
+        _editingProductId.value = null
+        productName.value = ""
+        productDescription.value = ""
+        productPrice.value = ""
+        productStock.value = ""
+        productImageUrl.value = ""
+        selectedCategory.value = null
+    }
+
+    private fun createProductDtoFromState(id: String?): ProductDto {
+        return ProductDto(
+            id = id,
+            name = productName.value,
+            description = productDescription.value,
+            price = productPrice.value.toDoubleOrNull() ?: 0.0,
+            stock = productStock.value.toIntOrNull() ?: 0,
+            imageUrl = productImageUrl.value,
+            storeId = "TIENDA_ADMIN_PRINCIPAL",
+            categoryId = selectedCategory.value?.id ?: ""
+        )
+    }
+
+    private fun getMockCategories(): List<ProductCategory> {
+        return listOf(
+            ProductCategory(id = "101", name = "Vegetales y Frutas", imageRes = 0, storeId = "2"),
+            ProductCategory(id = "105", name = "Bebestibles", imageRes = 0, storeId = "1")
+        )
     }
 }

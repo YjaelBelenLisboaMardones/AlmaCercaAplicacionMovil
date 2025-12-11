@@ -71,31 +71,31 @@ class StoreDetailViewModel : ViewModel() {
     // ▼▼▼ CORRECCIÓN 1: Parámetros de ProductCategory arreglados ▼▼▼
     private val allProductCategories = listOf(
         // Tienda 2
-        ProductCategory(101,
+        ProductCategory("101",
             "Vegetales y Frutas",
             R.drawable.cat_verduras,
-            2),
-        ProductCategory(102
+            "2"),
+        ProductCategory("102"
             , "Aceites",
             R.drawable.cat_aceites
-            , 2),
+            , "2"),
         // Tienda 1
-        ProductCategory(103,
+        ProductCategory("103",
             "Lacteos",
             R.drawable.cat_lacteos,
-            3),
-        ProductCategory(104,
+            "3"),
+        ProductCategory("104",
             "Carnes",
             R.drawable.cat_carnes,
-            3),
-        ProductCategory(105,
+            "3"),
+        ProductCategory("105",
             "Bebestibles",
             R.drawable.cat_bebestibles,
-            1),
-        ProductCategory(106,
+            "1"),
+        ProductCategory("106",
             "Despensa",
             R.drawable.cat_despensa,
-            1)
+            "1")
     )
 
     private val _uiState = MutableStateFlow(StoreDetailUiState())
@@ -121,7 +121,7 @@ class StoreDetailViewModel : ViewModel() {
         } ?: ""
 
         // 3. Busca las categorías de productos para esa tienda
-        val storeProductCategories = allProductCategories.filter { it.storeId == storeId }
+        val storeProductCategories = allProductCategories.filter { it.storeId == storeId.toString() }
 
         // 4. Actualiza el estado de la UI con toda la información
         _uiState.update {

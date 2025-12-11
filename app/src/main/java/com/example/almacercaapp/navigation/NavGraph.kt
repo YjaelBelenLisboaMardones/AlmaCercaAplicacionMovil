@@ -5,8 +5,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -15,8 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.almacercaapp.model.UserRole
 import com.example.almacercaapp.ui.theme.screen.*
-import com.example.almacercaapp.viewmodel.AdminViewModel
-import com.example.almacercaapp.viewmodel.AuthViewModel
+import com.example.almacercaapp.viewmodel.*
 import com.example.almacercaapp.model.CartRepository
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -24,7 +21,10 @@ import com.example.almacercaapp.model.CartRepository
 fun NavGraph(
     navController: NavHostController,
     authViewModel: AuthViewModel, 
-    adminViewModel: AdminViewModel
+    adminViewModel: AdminViewModel,
+    categoryProductsViewModel: CategoryProductsViewModel,
+    favoritesViewModel: FavoritesViewModel,
+    productDetailViewModel: ProductDetailViewModel // <-- ¡AÑADIDO!
 ) {
 
     val fadeAnimation = tween<Float>(400)
@@ -38,48 +38,34 @@ fun NavGraph(
         popExitTransition = { fadeOut(animationSpec = fadeAnimation) }
     ) {
 
-        // --- RUTA DE ADMIN ---
-        composable("admin_dashboard_screen") {
-            AdminDashboardScreen(viewModel = adminViewModel) // <-- PARÁMETRO CORREGIDO
-        }
-
-        // --- RUTAS DE AUTENTICACIÓN ---
+        composable("admin_dashboard_screen") { AdminDashboardScreen(viewModel = adminViewModel) }
         composable(Routes.Splash.route) { SplashScreen(navController) }
         composable(Routes.Onboarding.route) { OnboardingScreen(navController) }
         composable(Routes.RoleSelection.route) { RoleSelectionScreen(navController) }
 
         composable(
             route = Routes.SignUp.route,
-            arguments = listOf(navArgument("userRole") {
-                type = NavType.EnumType(UserRole::class.java)
-            })
+            arguments = listOf(navArgument("userRole") { type = NavType.EnumType(UserRole::class.java) })
         ) { backStackEntry ->
             val role = backStackEntry.arguments?.getSerializable("userRole") as? UserRole ?: UserRole.BUYER
             SignUpScreen(navController, authViewModel, role)
         }
 
-        composable(Routes.Verification.route) {
-            VerificationScreen(navController, authViewModel)
-        }
-
+        composable(Routes.Verification.route) { VerificationScreen(navController, authViewModel) }
         composable(Routes.Location.route) { LocationScreen() }
         composable(Routes.SignIn.route) { SignInScreen(navController, authViewModel) }
         composable(Routes.SignInMethod.route) { SignInMethodScreen(navController) }
 
-        // --- RUTAS PRINCIPALES --
         composable(
             route = "main_screen?start_destination={start_destination}",
-            arguments = listOf(navArgument("start_destination") {
-                type = NavType.StringType
-                nullable = true
-                defaultValue = null
-            })
+            arguments = listOf(navArgument("start_destination") { type = NavType.StringType; nullable = true; defaultValue = null })
         ) { backStackEntry ->
             val startDestination = backStackEntry.arguments?.getString("start_destination")
-            MainScreen(parentNavController = navController, startDestination = startDestination)
+            MainScreen(
+                parentNavController = navController, 
+                startDestination = startDestination)
         }
 
-        // --- RUTAS DE DETALLE Y PRODUCTOS ---
         composable("details/{storeId}") { backStackEntry ->
             val storeId = backStackEntry.arguments?.getString("storeId")
             StoreDetailScreen(storeId, { navController.popBackStack() }, navController)
@@ -89,12 +75,12 @@ fun NavGraph(
             route = "products/{storeId}/{productCategoryId}",
             arguments = listOf(
                 navArgument("storeId") { type = NavType.StringType },
-                navArgument("productCategoryId") { type = NavType.IntType }
+                navArgument("productCategoryId") { type = NavType.StringType } 
             )
         ) { backStackEntry ->
             val storeId = backStackEntry.arguments?.getString("storeId")
-            val productCategoryId = backStackEntry.arguments?.getInt("productCategoryId")
-            CategoryProductsScreen(storeId, productCategoryId, { navController.popBackStack() }, navController)
+            val categoryId = backStackEntry.arguments?.getString("productCategoryId")
+            CategoryProductsScreen(storeId, categoryId, categoryProductsViewModel, { navController.popBackStack() }, navController)
         }
 
         composable(
@@ -102,29 +88,16 @@ fun NavGraph(
             arguments = listOf(navArgument("productId") { type = NavType.StringType })
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
-            ProductDetailScreen(productId, { navController.popBackStack() }, { navController.navigate("main_screen?start_destination=cart") { popUpTo(navController.graph.startDestinationId) } })
+            // --- ¡CORREGIDO! Se pasa el ViewModel correcto a la pantalla ---
+            ProductDetailScreen(
+                productId = productId, 
+                viewModel = productDetailViewModel, 
+                onBack = { navController.popBackStack() }, 
+                onGoToCart = { navController.navigate("main_screen?start_destination=cart") { popUpTo(navController.graph.startDestinationId) } })
         }
 
-        // --- RUTAS DE CHECKOUT ---
-        composable(
-            route = "checkout",
-            enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
-            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) },
-            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
-            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
-        ) {
-            CheckoutScreen(onBack = { navController.popBackStack() }, onNavigateToProcessing = {
-                CartRepository.clearCart()
-                navController.navigate("processing_order") { popUpTo("home") { inclusive = false } }
-            })
-        }
-
-        composable("processing_order") {
-            ProcessingScreen { navController.navigate("order_ready") { popUpTo("home") { inclusive = false } } }
-        }
-
-        composable("order_ready") {
-            OrderReadyScreen { navController.navigate("main_screen?start_destination=home") { popUpTo("main_screen") { inclusive = true } } }
-        }
+        composable("checkout") { CheckoutScreen({ navController.popBackStack() }, { CartRepository.clearCart(); navController.navigate("processing_order") { popUpTo("home") } }) }
+        composable("processing_order") { ProcessingScreen { navController.navigate("order_ready") { popUpTo("home") } } }
+        composable("order_ready") { OrderReadyScreen { navController.navigate("main_screen?start_destination=home") { popUpTo("main_screen") { inclusive = true } } } }
     }
 }

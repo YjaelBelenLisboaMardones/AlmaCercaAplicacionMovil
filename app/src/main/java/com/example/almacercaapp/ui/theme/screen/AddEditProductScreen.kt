@@ -5,7 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack // Importa el icono correcto
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,16 +13,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.almacercaapp.ui.theme.GreenPrimary
+import com.example.almacercaapp.viewmodel.ProductViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditProductScreen(
     navController: NavHostController,
-    productId: Long? // Recibe el ID del producto (null si es para añadir)
+    productId: String?, // Recibe el ID del producto (null si es para añadir)
+    productViewModel: ProductViewModel = viewModel()
 ) {
-    // Estados para los campos del formulario
+    // Observa el producto del ViewModel
+    val product by productViewModel.product.collectAsState()
+
+    // Estados para los campos del formulario, inicializados con los datos del producto si existe
     var productName by remember { mutableStateOf("") }
     var productDescription by remember { mutableStateOf("") }
     var productPrice by remember { mutableStateOf("") }
@@ -32,7 +38,21 @@ fun AddEditProductScreen(
     val isEditing = productId != null
     val title = if (isEditing) "Editar Producto" else "Agregar Producto"
 
-    // TODO: Si isEditing es true, cargar los datos del producto usando el productId
+    // Cargar los datos del producto si estamos en modo edición
+    LaunchedEffect(productId) {
+        if (isEditing && productId != null) {
+            productViewModel.getProductById(productId)
+        }
+    }
+
+    // Actualizar los estados del formulario cuando el producto se carga o cambia
+    LaunchedEffect(product) {
+        product?.let {
+            productName = it.name
+            productDescription = it.description
+            productPrice = it.price.toString()
+        }
+    }
 
     Scaffold(
         topBar = {

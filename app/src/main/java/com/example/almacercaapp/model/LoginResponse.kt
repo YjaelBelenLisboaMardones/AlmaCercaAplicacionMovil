@@ -2,6 +2,6 @@ package com.example.almacercaapp.model
 
 // Respuesta que se recibe del backend tras un login o registro exitoso
 data class LoginResponse(
-    val token: String, // El token JWT para autenticar futuras peticiones
+    val userId: String, // <-- AÑADIDO: El ID del usuario que inicia sesión
     val role: String   // El rol del usuario ("ADMIN" o "BUYER")
 )

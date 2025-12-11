@@ -1,17 +1,16 @@
 package com.example.almacercaapp.model
 
-import com.example.almacercaapp.model.ProductCategory
-import androidx.annotation.DrawableRes
-
+/**
+ * Representa el modelo de datos de un Producto para la capa de UI.
+ * Esta clase está alineada con los datos que vienen del servidor.
+ */
 data class Product(
-    val id: Int,
+    val id: String,
+    val categoryId: String,
     val name: String,
-    @DrawableRes val imageRes: Int,
+    val description: String,
     val price: Double,
-    val size: String,
-    // ▼▼▼ ¡TU ARQUITECTURA! Ahora contiene el objeto completo ▼▼▼
-    val category: ProductCategory,
-    val store: Store,
-    val description: String = "Descripción por defecto del producto.",
-    val nutrients: String = "Información nutricional por defecto (100gr)."
+    val storeId: String,
+    val stock: Int,
+    val imageUrl: String // Usamos la URL de la imagen en lugar de un recurso local
 )

@@ -3,20 +3,61 @@ package com.example.almacercaapp.data.repository
 import com.example.almacercaapp.model.ProductDto
 import com.example.almacercaapp.network.ApiService
 
-// Repositorio dedicado a gestionar la lógica de datos de los productos.
+/**
+ * Repositorio para gestionar todos los datos relacionados con productos.
+ * Actúa como la única fuente de verdad para los datos de productos, ya sea
+ * que vengan de la red o de una futura caché local.
+ */
 class ProductRepository(private val apiService: ApiService) {
 
+    // --- ¡SOLUCIÓN! Caché en memoria para los productos --- 
+    private val productCache = mutableMapOf<String, ProductDto>()
+
     /**
-     * Llama al backend para obtener la lista completa de productos.
-     * Esta es una función pública que usan los clientes.
+     * Obtiene un producto específico por su ID.
+     * PRIMERO busca en el caché. Si no lo encuentra, intenta la llamada a la red.
      */
-    suspend fun getProducts(): Result<List<ProductDto>> {
+    suspend fun getProductById(productId: String): Result<ProductDto> {
+        // 1. Intentar obtener desde el caché
+        val cachedProduct = productCache[productId]
+        if (cachedProduct != null) {
+            return Result.success(cachedProduct)
+        }
+
+        // 2. Si no está en caché, intentar la llamada a la red (que puede fallar por seguridad)
         return try {
-            val response = apiService.listarProductos()
+            val allProductsResult = getAllProducts()
+            allProductsResult.fold(
+                onSuccess = {
+                    val product = it.find { productDto -> productDto.id == productId }
+                    if (product != null) {
+                        Result.success(product)
+                    } else {
+                        Result.failure(Exception("Producto no encontrado con ID: $productId"))
+                    }
+                },
+                onFailure = { Result.failure(it) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Llama al backend para obtener solo los productos de una categoría específica.
+     * Y guarda los resultados en el caché para uso futuro.
+     */
+    suspend fun getProductsByCategory(categoryId: String): Result<List<ProductDto>> {
+        return try {
+            val response = apiService.getProductsByCategory(categoryId)
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val products = response.body()!!
+                // ¡Guardar en caché!
+                products.forEach { product -> product.id?.let { productCache[it] = product } }
+                Result.success(products)
             } else {
-                Result.failure(Exception("Error al obtener los productos del servidor."))
+                val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
+                Result.failure(Exception("Error ${response.code()}: $errorBody"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -24,34 +65,50 @@ class ProductRepository(private val apiService: ApiService) {
     }
 
     /**
-     * Llama al backend para crear un nuevo producto.
-     * Esta es una función protegida para administradores.
+     * Llama al backend para obtener TODOS los productos.
+     * Y guarda los resultados en el caché.
      */
+    suspend fun getAllProducts(): Result<List<ProductDto>> {
+        return try {
+            val response = apiService.getAllProductsFromDefaultStore()
+            if (response.isSuccessful && response.body() != null) {
+                val products = response.body()!!
+                // ¡Guardar en caché!
+                products.forEach { product -> product.id?.let { productCache[it] = product } }
+                Result.success(products)
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
+                Result.failure(Exception("Error ${response.code()}: $errorBody"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // --- Funciones de Admin (crear, actualizar, eliminar) ---
+
     suspend fun createProduct(product: ProductDto): Result<ProductDto> {
         return try {
             val response = apiService.createProduct(product)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Error al crear el producto en el servidor."))
+                 val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
+                Result.failure(Exception("Error ${response.code()}: $errorBody"))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-
-    suspend fun updateProduct(product: ProductDto): Result<ProductDto> {
+    
+     suspend fun updateProduct(product: ProductDto): Result<ProductDto> {
         return try {
-            // Asume que el ID de ProductDto no está vacío para una actualización
-            if (product.id.isBlank()) {
-                return Result.failure(IllegalArgumentException("El ID del producto es necesario para actualizar."))
-            }
-
-            val response = apiService.updateProduct(product.id, product)
+            val response = apiService.updateProduct(product.id!!, product)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Error al actualizar el producto."))
+                val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
+                Result.failure(Exception("Error ${response.code()}: $errorBody"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -62,9 +119,10 @@ class ProductRepository(private val apiService: ApiService) {
         return try {
             val response = apiService.deleteProduct(productId)
             if (response.isSuccessful) {
-                Result.success(Unit) // Éxito si el código de respuesta es 2xx
+                Result.success(Unit)
             } else {
-                Result.failure(Exception("Error al eliminar el producto."))
+                val errorBody = response.errorBody()?.string() ?: "Respuesta de error no disponible"
+                Result.failure(Exception("Error ${response.code()}: $errorBody"))
             }
         } catch (e: Exception) {
             Result.failure(e)
