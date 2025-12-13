@@ -3,8 +3,9 @@ package com.example.almacercaapp.data.repository
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
+import com.example.almacercaapp.data.PreferencesKeys
 import com.example.almacercaapp.model.LoginRequest
+import com.example.almacercaapp.model.LoginResponse
 import com.example.almacercaapp.model.RegisterRequest
 import com.example.almacercaapp.model.UserRole
 import com.example.almacercaapp.network.ApiService
@@ -15,11 +16,6 @@ class UserRepository(
     private val dataStore: DataStore<Preferences>
 ) {
 
-    private object PreferencesKeys {
-        val USER_ID = stringPreferencesKey("user_id")
-        val USER_ROLE = stringPreferencesKey("user_role")
-    }
-
     // --- API CALLS ---
 
     suspend fun login(email: String, password: String): Result<Unit> {
@@ -28,8 +24,8 @@ class UserRepository(
             val response = apiService.login(request)
 
             if (response.isSuccessful && response.body() != null) {
-                val loginResponse = response.body()!!
-                saveUserSession(userId = loginResponse.userId, role = loginResponse.role)
+                val loginResponse: LoginResponse = response.body()!!  // Cambia aquí
+                saveUserSession(userId = loginResponse.id, role = loginResponse.role)
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("Credenciales inválidas"))
@@ -46,7 +42,7 @@ class UserRepository(
 
             if (response.isSuccessful && response.body() != null) {
                 val loginResponse = response.body()!!
-                saveUserSession(userId = loginResponse.userId, role = loginResponse.role)
+                saveUserSession(userId = loginResponse.id, role = loginResponse.role)
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("Error en el registro. El correo podría ya existir."))
@@ -65,12 +61,10 @@ class UserRepository(
         }
     }
 
-    // Expone el Flow del ID de usuario (NOMBRE CORREGIDO)
     val userIdFlow = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.USER_ID]
     }
 
-    // Expone el Flow del rol para que el ViewModel pueda leerlo
     val userRoleFlow = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.USER_ROLE]
     }

@@ -1,37 +1,54 @@
 package com.example.almacercaapp.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.almacercaapp.model.Product
+import androidx.lifecycle.viewModelScope
 import com.example.almacercaapp.model.CartRepository
+import com.example.almacercaapp.model.Product
+import kotlinx.coroutines.launch
 
-class CartViewModel : ViewModel() {
-    // 1. El ViewModel simplemente expone el estado del Repositorio.
-    val uiState = CartRepository.uiState
+class CartViewModel(
+    private val repository: CartRepository
+) : ViewModel() {
 
-    // 2. Las acciones del ViewModel ahora solo actúan como un puente,
-    //    pasando los datos a la lógica central que vive en el Repositorio.
+    val uiState = repository.uiState
 
     fun addProduct(product: Product) {
-        CartRepository.addProduct(product)
+        viewModelScope.launch {
+            repository.addProduct(product)
+        }
     }
 
-    // --- ¡AQUÍ ESTÁ LA CORRECCIÓN FINAL! ---
-    // Las funciones ahora aceptan `productId` como un String, que coincide
-    // con el modelo de datos `Product` y la llamada desde `CartScreen`.
-
     fun incrementQuantity(productId: String) {
-        CartRepository.incrementQuantity(productId)
+        viewModelScope.launch {
+            repository.incrementQuantity(productId)
+        }
     }
 
     fun decrementQuantity(productId: String) {
-        CartRepository.decrementQuantity(productId)
+        viewModelScope.launch {
+            repository.decrementQuantity(productId)
+        }
+    }
+
+    fun clearCart() {
+        viewModelScope.launch {
+            repository.clearCart()
+        }
     }
 
     fun removeItem(productId: String) {
-        CartRepository.removeItem(productId)
+        viewModelScope.launch {
+            repository.removeItem(productId)
+        }
     }
 
     fun messageShown() {
-        CartRepository.messageShown()
+        repository.messageShown()
+    }
+
+    fun loadCart() {
+        viewModelScope.launch {
+            repository.loadCart()
+        }
     }
 }

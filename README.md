@@ -1,6 +1,7 @@
 # AlmaCercaApp: Plataforma de Comercio Local
 ## 1. Resumen del Proyecto
-AlmaCercaApp es una aplicación móvil desarrollada en Jetpack Compose que establece una conexión directa y eficiente entre Compradores y Vendedores locales. El proyecto implementa una arquitectura robusta MVVM, destacando por su manejo de roles y la separación completa de flujos de trabajo.
+AlmaCercaApp es una aplicación móvil desarrollada en Jetpack Compose que establece una conexión directa y eficiente entre Compradores y Vendedores locales. El proyecto implementa una arquitectura robusta MVVM sobre Room (SQLite), destacando por su manejo de roles y la separación completa de flujos de trabajo.
+
 ## 2. Funcionalidades Implementadas
 A. Autenticación y Flujo Condicional
 Selección de Rol: El flujo de registro inicia con la pantalla RoleSelectionScreen para que el usuario elija su rol (BUYER o SELLER).
@@ -36,9 +37,54 @@ DELETE/api/cart/items/{productId}BUYERElimina un ítem específico del carrito.
 🔐 Nota de Seguridad: Para las rutas protegidas (ADMIN y BUYER), 
 es obligatorio enviar el Header: userId: [ID_DEL_USUARIO].
 
-## Reporte de Estado Operacional Sistene Almacerca V1.0
-El sistema AlmaCerca(MVP) ha avanzado a la fase de integración y testing. Se ha completado la migración hacia estabilización de la persistencia de datos y la planificación de la Infraestructura Cloud, utilizando MongoDB para la persistencia de datos. El servicio APIRest está preparado para soportar los dos flujos de negocios críticos: Compra y Gestión de Inventario(Admin).
-El flujo ode productos en la experiencia de Comprador ha sido validado y los endpoints(GET/ Productos) responden satisfactoriamente. El próximo paso de desarrollo requiere la validación de la integridad de datos para la funcionalidad del Carrito de Compras.
 
-## Incidente Abiero (P1) 
-Fallo de consistencia en la Gestión de Inventario. Se ha detectado una disfunción de alto impacto operacional en el módulo de Administración. Aunque el flujo Post de creación de producto retorna un código de respuesta 201(CREATED), el producto no se refleja en la lista al consultar el endpoint GET. Esto compromete la continuidad operacional del administrador, impidiendo la gestión de stock(edición/eliminación). La hipótesis del Triage es un fallo en la lógica de filtrado de la query de lectura del servicio.
+
+
+## 📑 Reporte de Estado Operacional - AlmaCerca App
+
+**Fecha:** 13 de Diciembre, 2025  
+**Versión:** 1.0
+
+
+### 📋 Resumen Ejecutivo
+- Carrito de compras, Products, AdminProducts operativo end-to-end (backend y Android), con persistencia en MongoDB y sincronización en tiempo real.
+- Estado general: ✅ OPERACIONAL CON ÉXITO.
+
+
+### 📱 Frontend (Android/Kotlin)
+- Arquitectura: MVVM + Repository Pattern, DI manual en MainActivity, DataStore para sesión, Retrofit/OkHttp.
+- Repositorios/ViewModels: CartRepository como clase (suspend + backend sync), ProductDetailViewModel con onAddToCart(), CartViewModel y CheckoutViewModel funcionales, FavoritesRepository singleton en memoria.
+- Pantallas: Login/Register, Productos, Detalle, Carrito, Checkout, Favoritos (local).
+- Red: ApiService con firmas correctas y header userId agregado por AuthInterceptor.
+
+
+✅ FUNCIONALIDADES COMPLETADAS
+
+✅ Autenticación con tokens
+✅ Listado y filtrado de productos
+✅ Detalle de producto con imágenes
+✅ Carrito funcionando (POST/GET/PUT/DELETE)
+✅ Checkout con confirmación
+✅ Sincronización backend-app
+✅ Manejo de errores UI
+
+
+### 🔌 Integración Frontend-Backend
+- Flujo agregar al carrito: ProductDetailScreen → ViewModel.onAddToCart() → CartRepository.addProduct() → POST `/api/cart/add` con `userId` → MongoDB → estado local actualizado.
+- DataStore: keys compartidas `PreferencesKeys.USER_ID` y `USER_ROLE` para UserRepository y CartRepository.
+
+
+## 🛠️ Problemas Resueltos
+
+| Problema | Causa | Solución |
+| --- | --- | --- |
+| userId NULL en CartRepository | Keys de DataStore con diferentes instancias | Crear PreferencesKeys.kt compartido |
+| POST /api/cart no llegaba | onGoToCart() navegaba antes de completar | Remover navegación inmediata del botón |
+| Form urlencoded vs JSON | EndPoint esperaba JSON | Agregar @RequestBody a CartController |
+| ProductService.update() incompleto | No guardaba stock/imageUrl/categoryId | Agregar setters faltantes |
+| Carrito solo local | CartRepository era object (singleton) | Convertir a class con DI |
+
+
+### 🚀 Recomendaciones Next Sprint
+
+- **Registrar compras del buyer en el panel de administración** para trazabilidad y consulta operativa.
