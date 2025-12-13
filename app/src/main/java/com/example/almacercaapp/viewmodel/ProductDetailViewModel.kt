@@ -19,8 +19,8 @@ data class ProductDetailUiState(
     val quantity: Int = 1,
     val totalPrice: Double = 0.0,
     val isFavorite: Boolean = false,
-    val isLoading: Boolean = true, // Estado de carga
-    val error: String? = null // Mensaje de error
+    val isLoading: Boolean = true,
+    val error: String? = null
 ) {
     val formattedTotalPrice: String get() {
         val format = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
@@ -29,7 +29,10 @@ data class ProductDetailUiState(
     }
 }
 
-class ProductDetailViewModel(private val productRepository: ProductRepository) : ViewModel() {
+class ProductDetailViewModel(
+    private val productRepository: ProductRepository,
+    private val cartRepository: CartRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductDetailUiState())
     val uiState = _uiState.asStateFlow()
@@ -47,7 +50,7 @@ class ProductDetailViewModel(private val productRepository: ProductRepository) :
             productRepository.getProductById(productId)
                 .onSuccess { productDto ->
                     Log.d("ProductDetailVM", "Producto cargado con éxito: ${productDto.name}")
-                    val product = productDto.toProduct() // Mapeo de DTO a Modelo de UI
+                    val product = productDto.toProduct()
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -83,8 +86,25 @@ class ProductDetailViewModel(private val productRepository: ProductRepository) :
     }
 
     fun onAddToCart() {
-        val product = _uiState.value.product ?: return
+        val product = _uiState.value.product
         val quantity = _uiState.value.quantity
-        CartRepository.addMultipleProducts(product, quantity)
+
+        Log.d("ProductDetailVM", "=== onAddToCart INICIADO ===")
+        Log.d("ProductDetailVM", "product: ${product?.name}")
+        Log.d("ProductDetailVM", "quantity: $quantity")
+
+        if (product == null) {
+            Log.e("ProductDetailVM", "ERROR: product es null, abortando")
+            return
+        }
+
+        Log.d("ProductDetailVM", "Lanzando coroutine para agregar al carrito")
+        viewModelScope.launch {
+            repeat(quantity) {
+                Log.d("ProductDetailVM", "Agregando producto (intento ${it + 1}/$quantity)")
+                cartRepository.addProduct(product)
+            }
+            Log.d("ProductDetailVM", "=== onAddToCart COMPLETADO ===")
+        }
     }
 }

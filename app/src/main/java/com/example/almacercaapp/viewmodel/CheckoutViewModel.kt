@@ -1,10 +1,12 @@
 package com.example.almacercaapp.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.almacercaapp.model.CartRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 // Estado de la UI específico para esta pantalla
 data class CheckoutUiState(
@@ -14,10 +16,12 @@ data class CheckoutUiState(
     val showConfirmDialog: Boolean = false
 )
 
-class CheckoutViewModel : ViewModel() {
+class CheckoutViewModel(
+    private val cartRepository: CartRepository
+) : ViewModel() {
 
     // 1. Conecta con el Repositorio para obtener los productos y totales
-    val cartUiState = CartRepository.uiState
+    val cartUiState = cartRepository.uiState
 
     // 2. Estado mutable para los campos de la UI
     private val _uiState = MutableStateFlow(CheckoutUiState())
@@ -52,17 +56,16 @@ class CheckoutViewModel : ViewModel() {
     }
 
     fun onConfirmPurchase() {
-        // Lógica clave: el diálogo se abre, y la compra se prepara.
-        // La navegación se hace DESDE el diálogo (en CheckoutScreen.kt).
-
-        // ▼▼▼ AÑADE ESTO: VACÍA EL CARRITO AQUÍ ▼▼▼
-        CartRepository.clearCart() // ¡Vacía el carrito!
-        // ▲▲▲ HASTA AQUÍ ▲▲▲
+        // Vacía el carrito (suspend function, requiere coroutine)
+        viewModelScope.launch {
+            cartRepository.clearCart()
+        }
 
         _uiState.update {
             it.copy(showConfirmDialog = true)
         }
     }
+
     fun onDialogDismiss() {
         _uiState.update { it.copy(showConfirmDialog = false) }
     }

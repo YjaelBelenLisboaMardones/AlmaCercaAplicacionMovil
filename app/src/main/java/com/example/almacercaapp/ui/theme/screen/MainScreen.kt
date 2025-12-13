@@ -10,36 +10,36 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.almacercaapp.navigation.HomeNavGraph
-import com.example.almacercaapp.ui.theme.component.NavigationBar // Asegúrate de que esta es la importación correcta de tu BottomBar
+import com.example.almacercaapp.ui.theme.component.NavigationBar
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.BlendMode
+import com.example.almacercaapp.viewmodel.CartViewModel
+import com.example.almacercaapp.viewmodel.FavoritesViewModel
 
-//el parentnavcontroller se utilizará mas adelante para hacer click en una tienda
 @Composable
 fun MainScreen(
     parentNavController: NavHostController,
-    startDestination: String?// Recibe la instrucción de en qué pestaña empezar
+    startDestination: String?,
+    cartViewModel: CartViewModel,
+    favoritesViewModel: FavoritesViewModel
 ) {
     // Este es el NavController para las pestañas INTERNAS (Home, Carrito, etc.)
     val homeNavController = rememberNavController()
 
-    // Determina la ruta de inicio. Si viene una instrucción (ej: "cart_screen"), úsala.
+    // Determina la ruta de inicio. Si viene una instrucción (ej: "cart"), úsala.
     // Si no, usa la ruta de "home" por defecto.
     val startRoute = startDestination ?: "home"
 
     // Observamos la pila de navegación del NavController INTERNO para saber en qué pantalla estamos
     val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
     // La ruta actual para iluminar el ícono correcto en la BottomBar.
-    // Usamos la ruta del backstack si existe, si no, usamos la ruta de inicio que calculamos.
     val currentRoute = navBackStackEntry?.destination?.route ?: startRoute
 
     // Scaffold es el "marco" de la ventana. Solo lo defines UNA VEZ.
     Scaffold(
-        // 2. Asigna tu componente BottomBar aquí.
         bottomBar = {
             NavigationBar(
                 selectedDestination = currentRoute,
-                onItemSelected = { route ->// Le pasas la ruta actual
+                onItemSelected = { route ->
                     // Cuando se toca un ítem, navegas a esa ruta
                     homeNavController.navigate(route) {
                         popUpTo(homeNavController.graph.startDestinationId) { saveState = true }
@@ -51,9 +51,6 @@ fun MainScreen(
         }
     ) { innerPadding ->
         Box(
-            // Le decimos al Box que llene todo el tamaño y que
-            // SOLO aplique el padding de ABAJO (para la barra de navegación).
-            // Ignoramos el padding de ARRIBA (top).
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())
@@ -61,6 +58,8 @@ fun MainScreen(
             HomeNavGraph(
                 navController = homeNavController,
                 parentNavController = parentNavController,
+                cartViewModel = cartViewModel,
+                favoritesViewModel = favoritesViewModel,
                 startDestination = startRoute
             )
         }

@@ -18,22 +18,25 @@ import com.example.almacercaapp.ui.theme.screen.FaqScreen
 import com.example.almacercaapp.ui.theme.screen.HelpCenterScreen
 import com.example.almacercaapp.ui.theme.screen.NotificationsScreen
 import com.example.almacercaapp.ui.theme.screen.PersonalDataScreen
-import com.example.almacercaapp.ui.theme.screen.SupportChatScreen // Asegúrate que el nombre de tu archivo de chat sea SupportScreen.kt
+import com.example.almacercaapp.ui.theme.screen.SupportChatScreen
+import com.example.almacercaapp.viewmodel.CartViewModel
+import com.example.almacercaapp.viewmodel.FavoritesViewModel
 
 //Gestiona la navegacion interna entre las 5 pestañas del navigationbar
-@RequiresApi(Build.VERSION_CODES.O) // <-- ANOTACIÓN ADJUNTADA A LA FUNCIÓN
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeNavGraph(
     navController: NavHostController,
     parentNavController: NavHostController,
+    cartViewModel: CartViewModel,
+    favoritesViewModel: FavoritesViewModel,
     modifier: Modifier = Modifier,
     startDestination: String
 ) {
     NavHost(
         navController = navController,
         modifier = modifier,
-        startDestination = startDestination// Ckya que recibe la funcion como parametro hacemos que sea flexible el homenavgraph
-        //dejandonos que pueda moverse dependiendo del caso
+        startDestination = startDestination
     ) {
 
         composable(route = "home") {
@@ -43,24 +46,27 @@ fun HomeNavGraph(
             ExploreScreen()
         }
         composable(route = "cart") {
-            CartScreen(parentNavController = parentNavController)
+            CartScreen(
+                parentNavController = parentNavController,
+                cartViewModel = cartViewModel
+            )
         }
         composable(route = "favorites") {
-            FavoritesScreen(parentNavController = parentNavController)        }
-
-        // --- ESTA ES LA CORRECCIÓN ---
-        // ProfileScreen necesita AMBOS controladores
-        composable(route = "profile") {
-            ProfileScreen(
-                homeNavController = navController, // El controlador de las pestañas
-                parentNavController = parentNavController  // El controlador principal
+            FavoritesScreen(
+                parentNavController = parentNavController,
+                viewModel = favoritesViewModel
             )
         }
 
-        // --- CORRECCIÓN DE LAS OTRAS RUTAS ---
-        // El resto de las pantallas debe usar el 'navController' de las pestañas
-        // para que la barra verde de abajo NO desaparezca.
+        // ProfileScreen necesita AMBOS controladores
+        composable(route = "profile") {
+            ProfileScreen(
+                homeNavController = navController,
+                parentNavController = parentNavController
+            )
+        }
 
+        // El resto de las pantallas usa el navController de las pestañas
         composable(Routes.PersonalData.route) {
             PersonalDataScreen(navController = navController)
         }
@@ -73,13 +79,8 @@ fun HomeNavGraph(
         composable(Routes.HelpCenter.route) {
             HelpCenterScreen(navController = navController)
         }
-        composable(Routes.Support.route) { // Usando la ruta 'support' que definimos
-            SupportChatScreen(navController = navController) // Usando el archivo SupportScreen.kt
+        composable(Routes.Support.route) {
+            SupportChatScreen(navController = navController)
         }
     }
 }
-
-
-
-
-

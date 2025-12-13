@@ -19,23 +19,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.almacercaapp.R
-import com.example.almacercaapp.model.ProductDto
+import com.example.almacercaapp.model.Product
 import com.example.almacercaapp.viewmodel.FavoritesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     parentNavController: NavHostController,
-    viewModel: FavoritesViewModel = viewModel() // Asumimos que se inyectará correctamente
+    viewModel: FavoritesViewModel
 ) {
-    // 1. Observa los nuevos estados desde el ViewModel
-    val products by viewModel.products.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    // Observa los favoritos desde el ViewModel
+    val favoriteProducts by viewModel.favoriteProducts.collectAsState()
 
     Scaffold(
         topBar = {
@@ -51,28 +49,24 @@ fun FavoritesScreen(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             contentAlignment = Alignment.Center
         ) {
-            // 2. Muestra un indicador de carga mientras los datos están en camino
-            if (isLoading) {
-                CircularProgressIndicator()
-            } 
-            // 3. Muestra un mensaje si, después de cargar, la lista está vacía
-            else if (products.isEmpty()) {
+            // Muestra un mensaje si la lista está vacía
+            if (favoriteProducts.isEmpty()) {
                 Text("Aún no tienes productos favoritos.")
-            } 
-            // 4. Muestra la lista de productos que vienen de la nube
+            }
+            // Muestra la lista de productos favoritos
             else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    items(products) { product ->
+                    items(favoriteProducts) { product ->
                         FavoriteItemRow(
                             product = product,
                             onClick = {
                                 parentNavController.navigate("product_detail/${product.id}")
                             }
                         )
-                        Divider()
+                        HorizontalDivider()
                     }
                 }
             }
@@ -81,11 +75,11 @@ fun FavoritesScreen(
 }
 
 /**
- * Composable de ayuda que AHORA USA ProductDto y carga imágenes desde la nube.
+ * Composable de ayuda para mostrar un producto favorito
  */
 @Composable
 private fun FavoriteItemRow(
-    product: ProductDto, // <-- Acepta el modelo de la nube
+    product: Product,
     onClick: () -> Unit
 ) {
     Row(
@@ -117,7 +111,7 @@ private fun FavoriteItemRow(
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = product.description.take(40) + "...", // Muestra una breve descripción
+                text = product.description.take(40) + "...",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
                 maxLines = 1

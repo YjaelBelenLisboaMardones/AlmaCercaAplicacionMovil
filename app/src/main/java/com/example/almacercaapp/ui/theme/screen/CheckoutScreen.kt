@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.almacercaapp.viewmodel.CheckoutViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +26,7 @@ import com.example.almacercaapp.viewmodel.CheckoutViewModel
 fun CheckoutScreen(
     onBack: () -> Unit,
     onNavigateToProcessing: () -> Unit,
-    checkoutViewModel: CheckoutViewModel = viewModel()
+    checkoutViewModel: CheckoutViewModel
 ) {
     val cartUiState by checkoutViewModel.cartUiState.collectAsState()
     val uiState by checkoutViewModel.uiState.collectAsState()
@@ -134,19 +133,18 @@ fun CheckoutScreen(
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Divider()
+            HorizontalDivider()
 
 
             // --- 4. Artículos (del Carrito) ---
             SectionHeader(title = "ARTÍCULOS")
             cartUiState.items.forEach { cartItem ->
-                // (Puedes usar tu 'CartItemRow' aquí si lo tienes, o este simple)
                 SimpleCheckoutItem(
                     title = cartItem.product.name,
                     description = "Cantidad: ${cartItem.quantity}",
                     price = "$${(cartItem.product.price * cartItem.quantity).toInt()}"
                 )
-                Divider()
+                HorizontalDivider()
             }
 
             // --- 5. Resumen de Total ---
@@ -206,10 +204,6 @@ fun SimpleCheckoutItem(title: String, description: String, price: String) {
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // (Aquí iría la Image(product.imageRes) si la tienes)
-        // Image(painter = ..., modifier = Modifier.size(60.dp))
-        // Spacer(modifier = Modifier.width(16.dp))
-
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title, fontWeight = FontWeight.SemiBold)
             Text(text = description, style = MaterialTheme.typography.bodySmall, color = Color.Gray)

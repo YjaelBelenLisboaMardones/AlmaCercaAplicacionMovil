@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,17 +15,18 @@ import androidx.navigation.navArgument
 import com.example.almacercaapp.model.UserRole
 import com.example.almacercaapp.ui.theme.screen.*
 import com.example.almacercaapp.viewmodel.*
-import com.example.almacercaapp.model.CartRepository
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    authViewModel: AuthViewModel, 
+    authViewModel: AuthViewModel,
     adminViewModel: AdminViewModel,
     categoryProductsViewModel: CategoryProductsViewModel,
     favoritesViewModel: FavoritesViewModel,
-    productDetailViewModel: ProductDetailViewModel // <-- ¡AÑADIDO!
+    productDetailViewModel: ProductDetailViewModel,
+    cartViewModel: CartViewModel,
+    checkoutViewModel: CheckoutViewModel // <-- AÑADIDO
 ) {
 
     val fadeAnimation = tween<Float>(400)
@@ -62,8 +64,11 @@ fun NavGraph(
         ) { backStackEntry ->
             val startDestination = backStackEntry.arguments?.getString("start_destination")
             MainScreen(
-                parentNavController = navController, 
-                startDestination = startDestination)
+                parentNavController = navController,
+                startDestination = startDestination,
+                cartViewModel = cartViewModel,
+                favoritesViewModel = favoritesViewModel
+            )
         }
 
         composable("details/{storeId}") { backStackEntry ->
@@ -75,7 +80,7 @@ fun NavGraph(
             route = "products/{storeId}/{productCategoryId}",
             arguments = listOf(
                 navArgument("storeId") { type = NavType.StringType },
-                navArgument("productCategoryId") { type = NavType.StringType } 
+                navArgument("productCategoryId") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val storeId = backStackEntry.arguments?.getString("storeId")
@@ -88,15 +93,22 @@ fun NavGraph(
             arguments = listOf(navArgument("productId") { type = NavType.StringType })
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
-            // --- ¡CORREGIDO! Se pasa el ViewModel correcto a la pantalla ---
             ProductDetailScreen(
-                productId = productId, 
-                viewModel = productDetailViewModel, 
-                onBack = { navController.popBackStack() }, 
+                productId = productId,
+                viewModel = productDetailViewModel,
+                onBack = { navController.popBackStack() },
                 onGoToCart = { navController.navigate("main_screen?start_destination=cart") { popUpTo(navController.graph.startDestinationId) } })
         }
 
-        composable("checkout") { CheckoutScreen({ navController.popBackStack() }, { CartRepository.clearCart(); navController.navigate("processing_order") { popUpTo("home") } }) }
+        composable("checkout") {
+            CheckoutScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToProcessing = {
+                    navController.navigate("processing_order") { popUpTo("home") }
+                },
+                checkoutViewModel = checkoutViewModel
+            )
+        }
         composable("processing_order") { ProcessingScreen { navController.navigate("order_ready") { popUpTo("home") } } }
         composable("order_ready") { OrderReadyScreen { navController.navigate("main_screen?start_destination=home") { popUpTo("main_screen") { inclusive = true } } } }
     }

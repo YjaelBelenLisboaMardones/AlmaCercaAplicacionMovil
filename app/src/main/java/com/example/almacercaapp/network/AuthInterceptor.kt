@@ -12,10 +12,14 @@ import okhttp3.Response
 /**
  * Este interceptor es el "guardia de seguridad" de nuestra red.
  * Ya no depende de UserRepository, sino directamente de DataStore para romper el ciclo.
+ * Añade el header userId solo para rutas de carrito.
  */
 class AuthInterceptor(private val dataStore: DataStore<Preferences>) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
+        val originalRequest = chain.request()
+        val url = originalRequest.url.toString()
+
         // Lee el ID de usuario directamente desde DataStore.
         val userId = runBlocking {
             dataStore.data.map { preferences ->
@@ -23,17 +27,16 @@ class AuthInterceptor(private val dataStore: DataStore<Preferences>) : Intercept
             }.first()
         }
 
-        val originalRequest = chain.request()
+        // Solo añade userId para rutas de carrito
+        val needsUserId = url.contains("/api/cart")
 
-        // Si no hay userId, la petición continúa sin cabecera (para login, etc.)
-        if (userId == null) {
-            return chain.proceed(originalRequest)
+        val newRequest = if (needsUserId && !userId.isNullOrBlank()) {
+            originalRequest.newBuilder()
+                .header("userId", userId)
+                .build()
+        } else {
+            originalRequest
         }
-
-        // Si hay userId, se añade la cabecera.
-        val newRequest = originalRequest.newBuilder()
-            .header("userId", userId)
-            .build()
 
         return chain.proceed(newRequest)
     }

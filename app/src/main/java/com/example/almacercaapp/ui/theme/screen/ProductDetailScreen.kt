@@ -1,5 +1,6 @@
 package com.example.almacercaapp.ui.theme.screen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,6 +58,7 @@ fun ProductDetailScreen(
             if (uiState.product != null && !uiState.isLoading) {
                 Button(
                     onClick = {
+                        Log.d("ProductDetailScreen", "Botón presionado!")
                         viewModel.onAddToCart()
                         onGoToCart()
                     },
