@@ -1,128 +1,83 @@
-# AlmaCercaApp: Plataforma de Comercio Local
-## 1. Resumen del Proyecto
-AlmaCercaApp es una aplicación móvil desarrollada en Jetpack Compose que establece una conexión directa y eficiente entre Compradores y Vendedores locales. El proyecto implementa una arquitectura robusta MVVM sobre Room (SQLite), destacando por su manejo de roles y la separación completa de flujos de trabajo.
+# 🛒 AlmaCerca App
 
-## 2. Funcionalidades Implementadas
-A. Autenticación y Flujo Condicional
-Selección de Rol: El flujo de registro inicia con la pantalla RoleSelectionScreen para que el usuario elija su rol (BUYER o SELLER).
+**Plataforma de Comercio Local**
+AlmaCercaApp es una aplicación móvil que conecta directa y eficientemente a Compradores y Vendedores locales.
 
-Login Unificado: El sistema consulta el rol guardado en la base de datos tras el login y redirige:
+![Estado](https://img.shields.io/badge/Estado-Producci%C3%B3n-green)
+![Tech](https://img.shields.io/badge/Stack-Kotlin%20|%20Spring%20Boot%20|%20MongoDB-blue)
 
-Comprador: Redirigido a MainScreen (Interfaz de Compra con Barra Inferior).
+## 📱 Funcionalidades Principales
 
-Vendedor: Redirigido a SellerMainScreen (Módulo de Gestión con Menú Lateral).
+El sistema separa completamente los flujos de trabajo según el rol del usuario:
 
-B. Módulo Vendedor (Gestión de Inventario)
-El área del vendedor implementa la lógica de gestión de inventario:
+### 👤 Rol: Comprador
+* **Interfaz de Compra:** Navegación fluida con barra inferior.
+* **Carrito de Compras:** Funcionalidad completa para agregar, eliminar y gestionar cantidades.
+* **Persistencia:** El carrito se guarda en la base de datos y se recupera al iniciar sesión.
 
-CRUD de Productos: Funcionalidad para Agregar, Editar y Eliminar productos a través de AddEditProductScreen.
+### 🏪 Rol: Vendedor
+* **Gestión de Inventario (CRUD):** Agregar, editar y eliminar productos.
+* **Panel de Control:** Menú lateral con acceso a soporte y gestión.
+* **Carga de Imágenes:** Gestión visual de los productos.
 
-Soporte: Pantallas de FAQ, Centro de Ayuda y Soporte/Chat disponibles en el menú lateral.
-3. Arquitectura y Pruebas del Sistema📋 Requisitos de EjecuciónIDE: Android Studio (Ladybug o versión reciente).
-Versión Android: Mínimo API 24 (Android 7.0).Conectividad: Acceso a Internet (Requerido para conectar con Railway).
+## 🛠️ Stack Tecnológico y Arquitectura
 
-4. 🔗 Endpoints de la API (Backend)
-La aplicación se conecta a un servidor desplegado en Railway. 
-5. A continuación se detallan las rutas disponibles y los permisos necesarios para consumirlas.
-Método HTTP   Ruta (Endpoint)  Rol RequeridoDescripción
-POST/api/auth/register    PúblicoRegistra un nuevo usuario (comprador).
-POST/api/auth/loginPúblicoInicia sesión y devuelve un objeto Usuario (con ID y Rol).
-GET/api/admin/productsADMINLista todos los productos del sistema.
-POST/api/admin/productsADMINAgrega un nuevo producto al catálogo.
-PUT/api/admin/products/{id}ADMINModifica un producto existente por su ID.
-DELETE/api/admin/products/{id}ADMINElimina un producto del catálogo.
-GET/api/cartBUYERObtiene la lista de ítems del carrito del usuario actual.
-POST/api/cartBUYERAgrega un ítem (producto + cantidad) al carrito.
-DELETE/api/cart/items/{productId}BUYERElimina un ítem específico del carrito.
-🔐 Nota de Seguridad: Para las rutas protegidas (ADMIN y BUYER), 
-es obligatorio enviar el Header: userId: [ID_DEL_USUARIO].
+El proyecto utiliza una arquitectura **MVVM (Model-View-ViewModel)** para separar la interfaz gráfica de la lógica de negocio.
 
+* **Frontend:** Android Nativo con **Kotlin** y **Jetpack Compose**.
+* **Backend:** API REST desarrollada en **Java (Spring Boot)**.
+* **Base de Datos:** **MongoDB Atlas** (NoSQL).
+* **Infraestructura:** Desplegado en **Render**.
+* **Seguridad:** Autenticación mediante **JWT Tokens**.
 
+---
 
+## 🚀 Cómo ejecutar el proyecto
 
-## 📑 Reporte de Estado Operacional - AlmaCerca App
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone [https://github.com/YjaelBelenLisboaMardones/AlmaCercaAplicacionMovil.git](https://github.com/YjaelBelenLisboaMardones/AlmaCercaAplicacionMovil.git)
+    ```
+2.  **Abrir en Android Studio:**
+    * Usa una versión reciente (Ladybug o superior recomendado).
+    * Espera a que Gradle sincronice las dependencias.
+3.  **Ejecutar:**
+    * Selecciona el dispositivo (Emulador o Físico, mín API 24).
+    * Dale al botón de "Run".
+    * *Nota: La app ya está configurada para conectarse al servidor de producción en Render.*
 
-**Fecha:** 15 de Diciembre, 2025  
-Versión: 1.1 (Producción / Cloud Release) 
-Servicio: 🟢 ONLINE / ESTABLE
+---
 
-📋 1. Resumen Ejecutivo
-El sistema ha completado exitosamente su migración a un entorno de Producción en la Nube. La arquitectura ahora opera bajo un modelo distribuido, con el Backend contenerizado en la nube y el Frontend móvil consumiendo datos reales vía HTTPS.
+## 🔌 API Endpoints (Backend)
 
-Resultado: Conectividad End-to-End (E2E) verificada al 100%.
+La aplicación móvil consume los siguientes servicios desplegados en la nube:
 
-☁️ 2. Infraestructura y Despliegue
-
-Servidor: Render (Docker Container Runtime).
-
-Base de Datos: MongoDB Atlas (Cluster Producción). Conexión segura establecida.
-
-Seguridad: Credenciales inyectadas vía Variables de Entorno (ENV VARS). Ninguna credencial sensible expuesta en el repositorio.
-
-Red: Configuración de puerto explícita (PORT=8080) para resolución de Health Checks externos.
-
-✅ 3. Módulos y Endpoints Verificados
-
-Se ha realizado una batería de pruebas de integración (Postman + Android) confirmando la operatividad de los siguientes módulos:
-
-🔐 Autenticación y Usuarios:
-
-Login y Registro (/api/auth/*) funcionales. Generación de JWT Tokens correcta.
-Roles de usuario (BUYER/ADMIN) persistidos en MongoDB.
-
-📦 Catálogo de Productos:
-
-Listado general y detalle (/api/products/*) sirviendo datos en tiempo real.
-Imágenes y stock sincronizados.
-
-🛒 Carrito de Compras:
-
-Flujo completo operativo: Agregar, Eliminar, Actualizar cantidad y Vaciar carrito.
-Persistencia de carrito por userId verificada.
-
-🛡️ Administración:
-
-Endpoints de gestión (/api/admin/*) activos y protegidos por rol.
-
-🛠️ 4. Registro de Incidentes y Resolución (Troubleshooting Log)
-
-A continuación, se detalla el historial de incidentes resueltos durante el pase a producción para referencia futura del equipo de desarrollo:
-
-🔴 Severidad: Crítica | Riesgo de Fuga de Credenciales
-
-Causa Raíz: Archivo .gitignore mal ubicado (dentro de carpeta .vscode), dejando expuesto launch.json.
-Solución: Reubicación del archivo a la raíz del proyecto y limpieza de caché de Git. Validación exitosa con git status.
-
-🟠 Severidad: Alta | Fallo de Despliegue en Render
-
-Causa Raíz: Error "No open ports detected". Render no detectaba el arranque de Spring Boot dentro del tiempo límite.
-Solución: Inyección de variable de entorno PORT=8080 en el dashboard de Render para forzar el enlace de puertos.
-
-🟡 Severidad: Media | Error 403 Forbidden en Navegador
-
-Causa Raíz: Intento de validación de endpoints POST (Login) usando el navegador (que envía GET).
-Solución: Validación técnica realizada vía Postman. Endpoint responde correctamente con Token.
-
-🟡 Severidad: Media | Timeout en Aplicación Móvil
-
-Causa Raíz: Fenómeno de "Cold Start" (Arranque en frío). El servidor gratuito de Render entra en suspensión tras inactividad.
-Solución: Se documentó el comportamiento esperado: latencia de ~60 segundos en la primera petición tras inactividad. Las peticiones subsiguientes son inmediatas.
-
-⚪ Severidad: Baja | Conflicto en Control de Versiones
-
-Causa Raíz: Divergencia entre la historia de la rama master remota y local.
-Solución: Implementación de rama de contingencia feature/config-produccion para asegurar el despliegue sin forzar un merge riesgoso.✅ FUNCIONALIDADES COMPLETADAS
+| Método | Endpoint | Rol Requerido | Descripción |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Público | Registro de usuario |
+| `POST` | `/api/auth/login` | Público | Login (Retorna Token + Rol) |
+| `GET` | `/api/products` | Público | Catálogo de productos |
+| `GET` | `/api/products/category/{idCategoria}` | Público | Buscar por categoría |
+| `GET` | `/api/products/{idProducto}` | Público | Buscar detalle de producto |
+| `GET` | `/api/cart` | BUYER | Ver carrito |
+| `POST` | `/api/cart/add` | BUYER | Agregar ítem al carrito |
+| `GET` | `/api/cart/items/{idProducto}` | BUYER | Ver solo ese item del Carrito |
+| `PUT` | `/api/cart/items/{idProducto}` | BUYER | Actualizar Cantidad |
+| `DELETE` | `/api/cart/items/{idProducto}` | BUYER | Eliminar Producto del Carrito |
+| `GET` | `/api/admin/products` | ADMIN | Listar productos |
+| `POST` | `/api/admin/products` | ADMIN | Crear nuevo producto |
+| `PUT` | `/api/admin/products/{idProducto}` | ADMIN | Editar producto |
+| `DELETE` | `/api/admin/products/{idProducto}` | ADMIN | Eliminar producto |
 
 
 
-Funcionalidades Completadas:
 
-✅ Autenticación con tokens
-✅ Listado y filtrado de productos
-✅ Detalle de producto con imágenes
-✅ Carrito funcionando (POST/GET/PUT/DELETE)
-✅ Checkout con confirmación
-✅ Sincronización backend-app
-✅ Manejo de errores UI
+---
 
+## 🐛 Bitácora de Incidencias (Troubleshooting)
 
+Registro de problemas reales solucionados durante la migración a Producción:
+
+* **Error de Cold Start (Render):** Se detectó que la primera petición tarda ~60 segundos debido a la suspensión del servidor gratuito. **Estado:** Documentado como comportamiento esperado.
+* **Exposición de Credenciales:** Un archivo `.gitignore` mal configurado expuso configuraciones locales. **Solución:** Se limpió el historial de Git y se corrigió el archivo.
+* **Error de Puertos:** Render no detectaba el arranque de Spring Boot. **Solución:** Se inyectó la variable `PORT=8080` en el entorno de nube.
