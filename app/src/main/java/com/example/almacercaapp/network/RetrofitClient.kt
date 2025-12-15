@@ -13,7 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 class RetrofitClient(dataStore: DataStore<Preferences>) {
 
-    private val baseUrl = "http://10.0.2.2:8080/"
+    private val baseUrl = "https://almacerca-api.onrender.com"
 
     val instance: ApiService
 
